@@ -1,0 +1,15 @@
+
+{
+  "teacher.dashboard.title": "ఉపాధ్యాయ డాష్‌బోర్డ్",
+  "teacher.heatmap.title": "తప్పుల హీట్‌మ్యాప్",
+  "teacher.plan.title": "రేపటి ప్రణాళిక",
+  "teacher.students.empty": "ఇంకా విద్యార్థులు చేరలేదు",
+  "teacher.data.sample": "నమూనా డేటా",
+  "teacher.login.title": "ఉపాధ్యాయ లాగిన్",
+  "teacher.login.email": "ఈమెయిల్",
+  "teacher.login.password": "పాస్‌వర్డ్",
+  "teacher.login.submit": "లాగిన్",
+  "teacher.student.detail": "విద్యార్థి వివరాలు",
+  "teacher.progress.title": "తరగతి పురోగతి",
+  "teacher.language": "భాష"
+}

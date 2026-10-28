@@ -1,0 +1,15 @@
+
+{
+  "teacher.dashboard.title": "Teacher Dashboard",
+  "teacher.heatmap.title": "Mistake Heatmap",
+  "teacher.plan.title": "Tomorrow's Plan",
+  "teacher.students.empty": "No students have joined yet",
+  "teacher.data.sample": "SAMPLE DATA",
+  "teacher.login.title": "Teacher Login",
+  "teacher.login.email": "Email",
+  "teacher.login.password": "Password",
+  "teacher.login.submit": "Login",
+  "teacher.student.detail": "Student Detail",
+  "teacher.progress.title": "Class Progress",
+  "teacher.language": "Language"
+}

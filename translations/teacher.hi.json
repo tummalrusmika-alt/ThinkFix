@@ -1,0 +1,15 @@
+
+{
+  "teacher.dashboard.title": "शिक्षक डैशबोर्ड",
+  "teacher.heatmap.title": "गलतियों का हीटमैप",
+  "teacher.plan.title": "कल की योजना",
+  "teacher.students.empty": "अभी तक कोई विद्यार्थी नहीं जुड़ा है",
+  "teacher.data.sample": "नमूना डेटा",
+  "teacher.login.title": "शिक्षक लॉगिन",
+  "teacher.login.email": "ईमेल",
+  "teacher.login.password": "पासवर्ड",
+  "teacher.login.submit": "लॉगिन करें",
+  "teacher.student.detail": "विद्यार्थी का विवरण",
+  "teacher.progress.title": "कक्षा की प्रगति",
+  "teacher.language": "भाषा"
+}
