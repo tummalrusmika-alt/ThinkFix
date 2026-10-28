@@ -1,0 +1,87 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isTeacher() {
+      return isSignedIn()
+        && request.auth.token.role == 'teacher';
+    }
+
+    function isOwner(studentId) {
+      return isSignedIn()
+        && request.auth.uid == studentId;
+    }
+
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isTeacher();
+    }
+
+    match /classCodes/{code} {
+      allow read: if false;
+      allow create, update, delete: if isTeacher();
+    }
+
+    match /students/{studentId} {
+      allow read: if isOwner(studentId) || isTeacher();
+
+      allow create: if isOwner(studentId)
+        && request.resource.data.keys().hasOnly([
+          'classId', 'joinedAt', 'name'
+        ]);
+
+      allow update: if isOwner(studentId)
+        && request.resource.data
+          .diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['classId', 'joinedAt', 'name']);
+
+      allow delete: if false;
+    }
+
+    match /questions/{questionId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isTeacher();
+    }
+
+    match /mistakes/{mistakeId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isTeacher();
+    }
+
+    match /attempts/{attemptId} {
+      allow read: if isSignedIn()
+        && (
+          resource.data.studentId == request.auth.uid
+          || isTeacher()
+        );
+
+      allow create: if isOwner(
+          request.resource.data.studentId
+        )
+        && request.resource.data.keys().hasOnly([
+          'studentId',
+          'questionId',
+          'classId',
+          'correct',
+          'mistakeId',
+          'type',
+          'isRepeat',
+          'isValid',
+          'timestamp'
+        ])
+        && request.resource.data.correct is bool
+        && request.resource.data.isRepeat is bool
+        && request.resource.data.isValid == true
+        && request.resource.data.type in ['solve', 'test'];
+
+      allow update, delete: if false;
+    }
+  }
+}
