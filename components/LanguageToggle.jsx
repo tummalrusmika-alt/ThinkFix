@@ -1,28 +1,27 @@
- 
 import { useState } from 'react'
+import { getLanguage } from '../lib/i18n'
 
 export default function LanguageToggle() {
-  const [language, setLanguage] = useState(
-    () => localStorage.getItem('thinkfix_language') || 'en'
-  )
+  const [language, setLanguage] = useState(getLanguage)
 
   function changeLanguage(event) {
     const selected = event.target.value
-    setLanguage(selected)
     localStorage.setItem('thinkfix_language', selected)
+    setLanguage(selected)
     window.location.reload()
   }
 
   return (
-    <label style={{ display: 'block', marginBottom: '20px' }}>
-      Language / భాష:
+    <label className="flex items-center gap-2 text-sm font-semibold">
+      <span>Language / భాష / भाषा</span>
       <select
         value={language}
         onChange={changeLanguage}
-        style={{ marginLeft: '10px', padding: '8px' }}
+        className="rounded-lg border border-gray-300 bg-white px-3 py-2"
       >
         <option value="en">English</option>
         <option value="te">తెలుగు</option>
+        <option value="hi">हिन्दी</option>
       </select>
     </label>
   )

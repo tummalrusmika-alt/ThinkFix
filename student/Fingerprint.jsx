@@ -1,111 +1,199 @@
 
-const MISTAKE_IDS = ['M1', 'M2', 'M3', 'M4', 'M5'];
+import { useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  getStudentSession,
+  getStudentAttempts,
+  getAllQuestions,
+  getMistakes
+} from '../lib/data'
+import { getFingerprint } from '../lib/fingerprint'
+import { pick, t, getLanguage } from '../lib/i18n'
 
-const VALID_STATUSES = [
-  'none',
-  'active',
-  'improving',
-  'provisionally_fixed',
-  'reopened',
-];
-
-function getAttemptTime(attempt) {
-  const value = attempt?.createdAt ?? attempt?.timestamp;
-  if (value == null) return 0;
-
-  const time = new Date(value).getTime();
-  return Number.isFinite(time) ? time : 0;
-}
-
-function isValidAttempt(attempt) {
-  return (
-    attempt &&
-    typeof attempt === 'object' &&
-    attempt.isValid !== false &&
-    attempt.isRepeat !== true &&
-    (attempt.type === undefined ||
-      ['solve', 'test'].includes(attempt.type))
-  );
-}
-
-function getFingerprintStatus(attempts) {
-  if (!Array.isArray(attempts)) {
-    throw new Error('Attempts must be an array.');
+const STATUS_INFO = {
+  none: {
+    en: 'Not assessed',
+    te: 'ఇంకా అంచనా వేయలేదు',
+    hi: 'अभी जाँच नहीं हुई'
+  },
+  active: {
+    en: 'Needs practice',
+    te: 'మరింత సాధన అవసరం',
+    hi: 'अभ्यास की आवश्यकता है'
+  },
+  improving: {
+    en: 'Improving',
+    te: 'మెరుగుపడుతోంది',
+    hi: 'सुधार हो रहा है'
+  },
+  provisionally_fixed: {
+    en: 'Almost fixed',
+    te: 'దాదాపు సరిచేయబడింది',
+    hi: 'लगभग ठीक हो गया'
+  },
+  reopened: {
+    en: 'Needs more practice',
+    te: 'మరింత సాధన అవసరం',
+    hi: 'और अभ्यास की आवश्यकता है'
   }
+}
 
-  const validAttempts = attempts
-    .filter(isValidAttempt)
-    .filter(
-      (attempt) =>
-        typeof (attempt.correct ?? attempt.isCorrect) === 'boolean'
+const STATUS_COLORS = {
+  none: '#64748b',
+  active: '#dc2626',
+  improving: '#d97706',
+  provisionally_fixed: '#16a34a',
+  reopened: '#ea580c'
+}
+
+export default function Fingerprint() {
+  const navigate = useNavigate()
+  const language = getLanguage()
+
+  const session = getStudentSession()
+
+  const mistakes = getMistakes() || []
+  const questions = getAllQuestions() || []
+
+  const attempts = session?.studentUid
+    ? getStudentAttempts(session.studentUid)
+    : []
+
+  const fingerprint = useMemo(() => {
+    try {
+      return getFingerprint(attempts, questions)
+    } catch (error) {
+      console.error('Fingerprint calculation failed:', error)
+      return {}
+    }
+  }, [attempts, questions])
+
+  if (!session?.studentUid) {
+    return (
+      <main style={{ maxWidth: 640, margin: '30px auto', padding: 24 }}>
+        <h1>{t('student.fingerprint')}</h1>
+        <p>Please join your class before viewing your fingerprint.</p>
+        <button onClick={() => navigate('/join')}>
+          Join class
+        </button>
+      </main>
     )
-    .sort((a, b) => getAttemptTime(a) - getAttemptTime(b));
-
-  let status = 'none';
-  let correctStreak = 0;
-
-  for (const attempt of validAttempts) {
-    const correct = attempt.correct ?? attempt.isCorrect;
-
-    if (!correct) {
-      status =
-        status === 'provisionally_fixed' ||
-        status === 'reopened'
-          ? 'reopened'
-          : 'active';
-
-      correctStreak = 0;
-      continue;
-    }
-
-    if (status === 'active' || status === 'reopened') {
-      correctStreak += 1;
-      status = 'improving';
-
-      if (correctStreak >= 2) {
-        status = 'provisionally_fixed';
-      }
-    } else if (status === 'improving') {
-      correctStreak += 1;
-
-      if (correctStreak >= 2) {
-        status = 'provisionally_fixed';
-      }
-    }
   }
 
-  return VALID_STATUSES.includes(status) ? status : 'none';
+  return (
+    <main
+      style={{
+        maxWidth: 760,
+        margin: '30px auto',
+        padding: 24,
+        fontFamily: 'Arial, sans-serif',
+        lineHeight: 1.6
+      }}
+    >
+      <h1>{t('student.fingerprint')}</h1>
+
+      <p>
+        Your mistake fingerprint shows how your understanding is
+        improving as you practise.
+      </p>
+
+      <p>
+        Student: <strong>{session.nickname || 'Student'}</strong>
+      </p>
+
+      {mistakes.length === 0 ? (
+        <p>No mistake records are available.</p>
+      ) : (
+        <div style={{ display: 'grid', gap: 16 }}>
+          {mistakes.map(mistake => {
+            const status = fingerprint[mistake.id] || 'none'
+            const statusText =
+              STATUS_INFO[status]?.[language] ||
+              STATUS_INFO[status]?.en ||
+              'Not assessed'
+
+            return (
+              <article
+                key={mistake.id}
+                style={{
+                  padding: 18,
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 12,
+                  background: '#fff',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 10
+                  }}
+                >
+                  <h2 style={{ margin: 0, fontSize: 18 }}>
+                    {mistake.id}: {pick(mistake.name, language)}
+                  </h2>
+
+                  <span
+                    style={{
+                      color: STATUS_COLORS[status] || '#64748b',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {statusText}
+                  </span>
+                </div>
+
+                <p style={{ marginBottom: 0 }}>
+                  {pick(mistake.hint, language)}
+                </p>
+
+                <div
+                  style={{
+                    height: 8,
+                    background: '#e2e8f0',
+                    borderRadius: 8,
+                    marginTop: 14,
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div
+                    style={{
+                      height: '100%',
+                      width:
+                        status === 'provisionally_fixed'
+                          ? '100%'
+                          : status === 'improving'
+                            ? '60%'
+                            : status === 'active' || status === 'reopened'
+                              ? '25%'
+                              : '0%',
+                      background: STATUS_COLORS[status] || '#64748b'
+                    }}
+                  />
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          flexWrap: 'wrap',
+          marginTop: 24
+        }}
+      >
+        <Link to="/learn">← Back to lesson</Link>
+
+        <Link to="/test">Take another test →</Link>
+
+        <Link to="/result">View results →</Link>
+      </div>
+    </main>
+  )
 }
-
-function getFingerprint(attempts = [], questions = []) {
-  if (!Array.isArray(attempts)) {
-    throw new Error('Attempts must be an array.');
-  }
-
-  const fingerprint = {};
-
-  for (const mistakeId of MISTAKE_IDS) {
-    const relatedAttempts = attempts
-      .filter((attempt) => {
-        if (!isValidAttempt(attempt)) return false;
-        if (attempt.mistakeId !== mistakeId) return false;
-
-        if (
-          questions.length > 0 &&
-          !questions.some((question) => question.id === attempt.questionId)
-        ) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => getAttemptTime(a) - getAttemptTime(b));
-
-    fingerprint[mistakeId] = getFingerprintStatus(relatedAttempts);
-  }
-
-  return fingerprint;
-}
-
-export { getFingerprint, getFingerprintStatus };
-export default getFingerprint;

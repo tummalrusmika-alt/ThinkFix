@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -6,10 +6,11 @@ import {
   getStudents,
   getClassAttempts,
   getMistakes,
-} from '../lib/teacherData'
+} from './lib/teacherData'
 
-import { getFingerprint } from '../lib/fingerprint'
-import { translate } from '../lib/translations'
+import { getFingerprint } from './lib/fingerprint'
+
+import questions from './questions.json'
 
 const MISTAKE_IDS = ['M1', 'M2', 'M3', 'M4', 'M5']
 
@@ -21,20 +22,18 @@ const STATUS_STYLES = {
   none: 'bg-slate-100 text-slate-500',
 }
 
-// Solid heatmap colors. Strong color shows the pattern from across the room,
-// and the symbol inside keeps it readable for color-blind viewers.
+// Soft, friendly heatmap colours. The symbol inside each tile keeps it
+// readable for colour-blind viewers.
 const TILE_STYLES = {
-  active: 'bg-red-500 text-white shadow-sm shadow-red-200',
-  improving: 'bg-amber-300 text-amber-900 shadow-sm shadow-amber-100',
-  provisionally_fixed: 'bg-emerald-500 text-white shadow-sm shadow-emerald-200',
-  reopened: 'bg-violet-500 text-white shadow-sm shadow-violet-200',
-  none: 'bg-slate-100 text-slate-300',
+  active: 'bg-[#E8735F] text-white shadow-sm shadow-[#E8735F]/30',
+  improving: 'bg-[#F6C453] text-[#6B4A00] shadow-sm shadow-[#F6C453]/40',
+  provisionally_fixed: 'bg-[#397F78] text-white shadow-sm shadow-[#397F78]/30',
+  reopened: 'bg-[#8C7AD1] text-white shadow-sm shadow-[#8C7AD1]/30',
+  none: 'bg-[#EEF3F0] text-[#B7C6C1]',
 }
 
-// Circumference of the progress ring around each student avatar
 const AVATAR_RING = 2 * Math.PI * 17
 
-// Symbol drawn in the tile's text color
 function StatusGlyph({ status, className = 'h-6 w-6' }) {
   const common = {
     viewBox: '0 0 24 24',
@@ -89,7 +88,6 @@ function StatusGlyph({ status, className = 'h-6 w-6' }) {
   )
 }
 
-// Converts translated objects into displayable text.
 function getLocalizedText(value, language = 'en') {
   if (typeof value === 'string' || typeof value === 'number') {
     return String(value)
@@ -114,8 +112,9 @@ function getLocalizedText(value, language = 'en') {
 const LABELS = {
   en: {
     teacher: 'TEACHER',
-    class: 'Class 7A · Fractions',
+    class: 'Class 6A · Fractions',
     logout: 'Log out',
+    refresh: 'Refresh',
     students: 'Students',
     attempted: 'Students with attempts',
     tracked: 'Mistake patterns tracked',
@@ -137,7 +136,7 @@ const LABELS = {
     noClass: 'No class is linked to this teacher.',
     loading: 'Loading dashboard...',
     language: 'Language',
-    sample: 'SAMPLE DATA',
+    sample: 'LIVE DATA',
     progress: 'Class Progress',
     attemptedCount: 'students have recorded attempts.',
     totalAttempts: 'Recorded attempts',
@@ -145,8 +144,9 @@ const LABELS = {
 
   te: {
     teacher: 'ఉపాధ్యాయులు',
-    class: '7A తరగతి · భిన్నాలు',
+    class: '6A తరగతి · భిన్నాలు',
     logout: 'లాగ్ అవుట్',
+    refresh: 'రిఫ్రెష్',
     students: 'విద్యార్థులు',
     attempted: 'ప్రయత్నాలు చేసిన విద్యార్థులు',
     tracked: 'గుర్తించిన తప్పుల నమూనాలు',
@@ -168,7 +168,7 @@ const LABELS = {
     noClass: 'ఈ ఉపాధ్యాయుడికి తరగతి అనుసంధానించబడలేదు.',
     loading: 'డాష్‌బోర్డ్ లోడ్ అవుతోంది...',
     language: 'భాష',
-    sample: 'నమూనా డేటా',
+    sample: 'లైవ్ డేటా',
     progress: 'తరగతి పురోగతి',
     attemptedCount: 'మంది విద్యార్థులు ప్రయత్నాలు నమోదు చేశారు.',
     totalAttempts: 'నమోదైన ప్రయత్నాలు',
@@ -176,8 +176,9 @@ const LABELS = {
 
   hi: {
     teacher: 'शिक्षक',
-    class: 'कक्षा 7A · भिन्न',
+    class: 'कक्षा 6A · भिन्न',
     logout: 'लॉग आउट',
+    refresh: 'रिफ्रेश',
     students: 'विद्यार्थी',
     attempted: 'प्रयास करने वाले विद्यार्थी',
     tracked: 'पहचाने गए गलती के प्रकार',
@@ -199,7 +200,7 @@ const LABELS = {
     noClass: 'इस शिक्षक से कोई कक्षा जुड़ी नहीं है।',
     loading: 'डैशबोर्ड लोड हो रहा है...',
     language: 'भाषा',
-    sample: 'नमूना डेटा',
+    sample: 'लाइव डेटा',
     progress: 'कक्षा की प्रगति',
     attemptedCount: 'विद्यार्थियों ने प्रयास दर्ज किए हैं।',
     totalAttempts: 'दर्ज किए गए प्रयास',
@@ -220,30 +221,52 @@ export default function TeacherDashboard() {
   const [language, setLanguage] = useState('en')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [errorDetail, setErrorDetail] = useState('')
   const [classInfo, setClassInfo] = useState(null)
   const [students, setStudents] = useState([])
   const [attempts, setAttempts] = useState([])
   const [mistakes, setMistakes] = useState([])
   const [fingerprints, setFingerprints] = useState({})
   const [hoverColumn, setHoverColumn] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const hasLoadedOnce = useRef(false)
 
   const labels = LABELS[language] || LABELS.en
 
   function t(key) {
-    const translated = translate(language, key)
-    return getLocalizedText(translated, language) || key
+    const keyMap = {
+      'teacher.dashboard.title': 'teacher',
+      'teacher.heatmap.title': 'heatmap',
+      'teacher.students.empty': 'noStudents',
+      'teacher.plan.title': 'plan',
+    }
+
+    const labelKey = keyMap[key]
+
+    return (labelKey && labels[labelKey]) || key
   }
 
   function statusLabel(status) {
     return labels[STATUS_KEYS[status] || 'none']
   }
 
+  // Auto-refresh every 15 seconds so new student answers appear.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRefreshKey((value) => value + 1)
+    }, 15000)
+
+    return () => clearInterval(timer)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
     async function loadDashboard() {
-      setLoading(true)
+      if (!hasLoadedOnce.current) setLoading(true)
       setError('')
+      setErrorDetail('')
 
       try {
         const teacherUid = sessionStorage.getItem('thinkfixTeacherUid')
@@ -273,11 +296,16 @@ export default function TeacherDashboard() {
         const nextFingerprints = {}
 
         for (const student of classStudents) {
+          const studentUid = student.authUid || student.id
+
           const studentAttempts = classAttempts.filter(
-            (attempt) => attempt.studentUid === student.authUid
+            (attempt) => attempt.studentUid === studentUid
           )
 
-          nextFingerprints[student.id] = getFingerprint(studentAttempts)
+          nextFingerprints[student.id] = getFingerprint(
+            studentAttempts,
+            questions
+          )
         }
 
         if (!cancelled) {
@@ -286,12 +314,14 @@ export default function TeacherDashboard() {
           setAttempts(classAttempts)
           setMistakes(classMistakes)
           setFingerprints(nextFingerprints)
+          hasLoadedOnce.current = true
         }
       } catch (err) {
         console.error('Dashboard loading error:', err)
 
         if (!cancelled) {
           setError('LOAD_ERROR')
+          setErrorDetail(err?.message || String(err))
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -303,7 +333,7 @@ export default function TeacherDashboard() {
     return () => {
       cancelled = true
     }
-  }, [navigate])
+  }, [navigate, refreshKey])
 
   function handleLogout() {
     sessionStorage.removeItem('thinkfixTeacherUid')
@@ -312,8 +342,13 @@ export default function TeacherDashboard() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
-        <p className="text-slate-600">{labels.loading}</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#FFFCF5] p-8">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 animate-pulse items-center justify-center rounded-2xl bg-[#254C49] text-2xl font-black text-white">
+            T
+          </div>
+          <p className="font-semibold text-[#718582]">{labels.loading}</p>
+        </div>
       </main>
     )
   }
@@ -323,21 +358,42 @@ export default function TeacherDashboard() {
       error === 'NO_CLASS' ? labels.noClass : labels.loadError
 
     return (
-      <main className="min-h-screen bg-slate-50 p-8">
-        <p role="alert" className="text-red-700">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={() => navigate('/teacher/login')}
-          className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-white"
-        >
-          {labels.logout}
-        </button>
+      <main className="min-h-screen bg-[#FFFCF5] p-8">
+        <div className="mx-auto max-w-xl rounded-3xl border border-[#F3C9C0] bg-white p-8 shadow-sm">
+          <p role="alert" className="text-lg font-bold text-[#C0432E]">
+            {errorMessage}
+          </p>
+
+          {errorDetail && (
+            <p className="mt-2 text-sm text-[#718582]">{errorDetail}</p>
+          )}
+
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setRefreshKey((value) => value + 1)}
+              className="rounded-xl bg-[#397F78] px-5 py-2.5 font-bold text-white transition hover:bg-[#2F6A64]"
+            >
+              {labels.refresh}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/teacher/login')}
+              className="rounded-xl border border-[#DCE7E2] bg-white px-5 py-2.5 font-semibold text-[#254C49] transition hover:bg-[#EAF4F1]"
+            >
+              {labels.logout}
+            </button>
+          </div>
+        </div>
       </main>
     )
   }
 
   const studentsWithAttempts = students.filter((student) =>
-    attempts.some((attempt) => attempt.studentUid === student.authUid)
+    attempts.some(
+      (attempt) => attempt.studentUid === (student.authUid || student.id)
+    )
   ).length
 
   const activeCounts = Object.fromEntries(
@@ -374,384 +430,444 @@ export default function TeacherDashboard() {
     language
   )
 
+  const statCards = [
+    { label: labels.students, value: students.length, icon: '🎓', tint: 'bg-[#DDEFEF]' },
+    { label: labels.attempted, value: studentsWithAttempts, icon: '✏️', tint: 'bg-[#FFF0BD]' },
+    { label: labels.tracked, value: MISTAKE_IDS.length, icon: '🎯', tint: 'bg-[#E8E2FA]' },
+    { label: labels.totalAttempts, value: attempts.length, icon: '📊', tint: 'bg-[#E4EDC9]' },
+  ]
+
   return (
-    <main className="min-h-screen bg-slate-50 p-4 sm:p-8">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-bold tracking-widest text-indigo-600">
-            THINKFIX · {labels.teacher}
-          </p>
+    <main className="relative min-h-screen overflow-hidden bg-[#FFFCF5] p-4 sm:p-8">
+      {/* Soft background decoration */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#DDEFEF] opacity-60 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#FFF0BD] opacity-60 blur-3xl" />
 
-          <h1 className="mt-2 text-3xl font-bold text-slate-900">
-            {t('teacher.dashboard.title')}
-          </h1>
-
-          <p className="mt-2 text-slate-600">
-            {getLocalizedText(classInfo?.className || labels.class, language)}
-          </p>
-
-          <span className="mt-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-            {labels.sample}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            {labels.language}
-            <select
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              aria-label={labels.language}
-              className="rounded-lg border border-slate-300 bg-white p-2 text-slate-900"
-            >
-              <option value="en">English</option>
-              <option value="te">తెలుగు</option>
-              <option value="hi">हिन्दी</option>
-            </select>
-          </label>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium hover:bg-slate-100"
-          >
-            {labels.logout}
-          </button>
-        </div>
-      </header>
-
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">{labels.students}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{students.length}</p>
-        </article>
-
-        <article className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">{labels.attempted}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{studentsWithAttempts}</p>
-        </article>
-
-        <article className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">{labels.tracked}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{MISTAKE_IDS.length}</p>
-        </article>
-
-        <article className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">{labels.totalAttempts}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{attempts.length}</p>
-        </article>
-      </section>
-
-      <section className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-700 px-5 py-6 text-white sm:px-8">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-16 h-52 w-52 rounded-full bg-white/10 blur-2xl"
-          />
-
-          <div className="relative flex flex-wrap items-end justify-between gap-5">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                {getLocalizedText(t('teacher.heatmap.title'), language)}
-              </h2>
-              <p className="mt-1 text-sm text-indigo-200">{labels.heatmapHelp}</p>
+      <div className="relative mx-auto max-w-6xl">
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#254C49] text-2xl font-black text-white shadow-lg">
+              T
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(STATUS_STYLES).map((status) => (
-                <span
-                  key={status}
-                  className="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-medium text-indigo-50 ring-1 ring-white/20"
-                >
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full ${TILE_STYLES[status]}`}
-                  >
-                    <StatusGlyph status={status} className="h-3.5 w-3.5" />
-                  </span>
-                  {statusLabel(status)}
+            <div>
+              <p className="text-xs font-bold tracking-[0.25em] text-[#397F78]">
+                THINKFIX · {labels.teacher}
+              </p>
+
+              <h1 className="mt-1 text-3xl font-black tracking-tight text-[#254C49]">
+                {t('teacher.dashboard.title')}
+              </h1>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <p className="text-[#718582]">
+                  {getLocalizedText(classInfo?.className || labels.class, language)}
+                </p>
+
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E4EDC9] px-3 py-1 text-xs font-bold text-[#526B38]">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#397F78]" />
+                  {labels.sample}
                 </span>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-5 sm:p-8">
-          {students.length === 0 ? (
-            <p className="py-8 text-center text-slate-500">
-              {getLocalizedText(t('teacher.students.empty'), language)}
-            </p>
-          ) : (
-            <div className="overflow-x-auto pb-2 pt-6">
-              <table className="w-full min-w-[720px] border-separate text-left text-sm [border-spacing:0_8px]">
-                <thead>
-                  <tr>
-                    <th className="sticky left-0 z-10 w-48 bg-white pb-2 pr-3 align-bottom text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      {labels.student}
-                    </th>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-[#718582]">
+              {labels.language}
+              <select
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                aria-label={labels.language}
+                className="rounded-xl border border-[#DCE7E2] bg-white p-2 font-semibold text-[#254C49] outline-none focus:border-[#397F78] focus:ring-2 focus:ring-[#DDEFEF]"
+              >
+                <option value="en">English</option>
+                <option value="te">తెలుగు</option>
+                <option value="hi">हिन्दी</option>
+              </select>
+            </label>
 
-                    {MISTAKE_IDS.map((mistakeId) => {
-                      const mistakeName = getLocalizedText(
-                        mistakes.find((mistake) => mistake.id === mistakeId)?.name,
+            <button
+              type="button"
+              onClick={() => setRefreshKey((value) => value + 1)}
+              className="rounded-xl border border-[#397F78] bg-white px-4 py-2 font-bold text-[#397F78] transition hover:bg-[#397F78] hover:text-white"
+            >
+              ⟳ {labels.refresh}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-xl border border-[#DCE7E2] bg-white px-4 py-2 font-semibold text-[#254C49] transition hover:bg-[#EAF4F1]"
+            >
+              {labels.logout}
+            </button>
+          </div>
+        </header>
+
+        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((card) => (
+            <article
+              key={card.label}
+              className="rounded-3xl border border-[#DCE7E2] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${card.tint}`}
+              >
+                {card.icon}
+              </div>
+              <p className="mt-4 text-sm font-medium text-[#718582]">
+                {card.label}
+              </p>
+              <p className="mt-1 text-4xl font-black text-[#254C49]">
+                {card.value}
+              </p>
+            </article>
+          ))}
+        </section>
+
+        <section className="mb-8 overflow-hidden rounded-[2rem] border border-[#DCE7E2] bg-white shadow-sm">
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#254C49] via-[#2F6A64] to-[#397F78] px-5 py-7 text-white sm:px-8">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-[#FFF0BD]/10 blur-2xl"
+            />
+
+            <div className="relative flex flex-wrap items-end justify-between gap-5">
+              <div>
+                <h2 className="text-2xl font-black tracking-tight">
+                  {getLocalizedText(t('teacher.heatmap.title'), language)}
+                </h2>
+                <p className="mt-1 text-sm text-[#CDE6E1]">{labels.heatmapHelp}</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(STATUS_STYLES).map((status) => (
+                  <span
+                    key={status}
+                    className="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-semibold text-white ring-1 ring-white/20"
+                  >
+                    <span
+                      className={`flex h-6 w-6 items-center justify-center rounded-full ${TILE_STYLES[status]}`}
+                    >
+                      <StatusGlyph status={status} className="h-3.5 w-3.5" />
+                    </span>
+                    {statusLabel(status)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-8">
+            {students.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DDEFEF] text-3xl">
+                  🎓
+                </div>
+                <p className="mt-4 font-semibold text-[#718582]">
+                  {getLocalizedText(t('teacher.students.empty'), language)}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto pb-2 pt-2">
+                <table className="w-full min-w-[720px] border-separate text-left text-sm [border-spacing:0_8px]">
+                  <thead>
+                    <tr>
+                      <th className="sticky left-0 z-10 w-48 bg-white pb-2 pr-3 align-bottom text-xs font-bold uppercase tracking-wider text-[#91A19C]">
+                        {labels.student}
+                      </th>
+
+                      {MISTAKE_IDS.map((mistakeId) => {
+                        const mistakeName = getLocalizedText(
+                          mistakes.find((mistake) => mistake.id === mistakeId)?.name,
+                          language
+                        )
+                        const isLit = hoverColumn === mistakeId
+                        const share = students.length
+                          ? Math.min(100, (activeCounts[mistakeId] / students.length) * 100)
+                          : 0
+
+                        return (
+                          <th
+                            key={mistakeId}
+                            onMouseEnter={() => setHoverColumn(mistakeId)}
+                            onMouseLeave={() => setHoverColumn(null)}
+                            className="px-1.5 pb-2 align-top font-normal"
+                          >
+                            <div
+                              className={`rounded-2xl px-3 py-2.5 text-center transition-colors duration-200 ${
+                                isLit
+                                  ? 'bg-[#397F78] text-white shadow-lg shadow-[#397F78]/30'
+                                  : 'bg-[#F4F9F7] text-[#254C49] ring-1 ring-[#DCE7E2]'
+                              }`}
+                            >
+                              <span className="block text-sm font-black">{mistakeId}</span>
+
+                              {mistakeName && (
+                                <span
+                                  title={mistakeName}
+                                  className={`mx-auto mt-0.5 block max-w-[120px] truncate text-[11px] ${
+                                    isLit ? 'text-[#DDEFEF]' : 'text-[#718582]'
+                                  }`}
+                                >
+                                  {mistakeName}
+                                </span>
+                              )}
+
+                              <span
+                                title={`${labels.active} + ${labels.reopened}`}
+                                className="mt-2.5 flex items-center gap-2"
+                              >
+                                <span
+                                  className={`h-1.5 flex-1 overflow-hidden rounded-full ${
+                                    isLit ? 'bg-white/25' : 'bg-[#DCE7E2]'
+                                  }`}
+                                >
+                                  <span
+                                    className={`block h-full rounded-full ${
+                                      isLit ? 'bg-white' : 'bg-[#E8735F]'
+                                    }`}
+                                    style={{ width: `${share}%` }}
+                                  />
+                                </span>
+                                <span className="text-xs font-bold tabular-nums">
+                                  {activeCounts[mistakeId]}
+                                </span>
+                              </span>
+                            </div>
+                          </th>
+                        )
+                      })}
+
+                      <th className="w-14 pb-2">
+                        <span className="sr-only">
+                          {labels.active} + {labels.reopened}
+                        </span>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {students.map((student) => {
+                      const nickname = getLocalizedText(
+                        student.nickname || 'Student',
                         language
                       )
-                      const isLit = hoverColumn === mistakeId
-                      const share = students.length
-                        ? Math.min(100, (activeCounts[mistakeId] / students.length) * 100)
-                        : 0
+                      const statuses = MISTAKE_IDS.map(
+                        (mistakeId) => fingerprints[student.id]?.[mistakeId] || 'none'
+                      )
+                      const needsHelp = statuses.filter((status) =>
+                        ['active', 'reopened'].includes(status)
+                      ).length
+                      const fixedCount = statuses.filter(
+                        (status) => status === 'provisionally_fixed'
+                      ).length
+                      const improvingCount = statuses.filter(
+                        (status) => status === 'improving'
+                      ).length
+                      const fixedArc = (fixedCount / MISTAKE_IDS.length) * AVATAR_RING
+                      const improvingArc =
+                        (improvingCount / MISTAKE_IDS.length) * AVATAR_RING
 
                       return (
-                        <th
-                          key={mistakeId}
-                          onMouseEnter={() => setHoverColumn(mistakeId)}
-                          onMouseLeave={() => setHoverColumn(null)}
-                          className="px-1.5 pb-2 align-top font-normal"
-                        >
-                          <div
-                            className={`rounded-2xl px-3 py-2.5 text-center transition-colors duration-200 ${
-                              isLit
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                                : 'bg-slate-50 text-slate-800 ring-1 ring-slate-200'
-                            }`}
-                          >
-                            <span className="block text-sm font-bold">{mistakeId}</span>
-
-                            {mistakeName && (
-                              <span
-                                title={mistakeName}
-                                className={`mx-auto mt-0.5 block max-w-[120px] truncate text-[11px] ${
-                                  isLit ? 'text-indigo-100' : 'text-slate-500'
-                                }`}
-                              >
-                                {mistakeName}
-                              </span>
-                            )}
-
-                            <span
-                              title={`${labels.active} + ${labels.reopened}`}
-                              className="mt-2.5 flex items-center gap-2"
+                        <tr key={student.id} className="group">
+                          <td className="sticky left-0 z-10 bg-white pr-3">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/teacher/student/${student.id}`)}
+                              className="flex w-full items-center gap-3 rounded-2xl bg-[#F4F9F7] px-3 py-2 text-left font-bold text-[#254C49] ring-1 ring-[#DCE7E2] transition group-hover:bg-[#DDEFEF] group-hover:text-[#254C49] group-hover:ring-[#397F78]"
                             >
                               <span
-                                className={`h-1.5 flex-1 overflow-hidden rounded-full ${
-                                  isLit ? 'bg-white/25' : 'bg-slate-200'
-                                }`}
+                                title={`${statusLabel('provisionally_fixed')} ${fixedCount}/${MISTAKE_IDS.length} · ${statusLabel('improving')} ${improvingCount}/${MISTAKE_IDS.length}`}
+                                className="relative flex h-10 w-10 shrink-0 items-center justify-center"
                               >
-                                <span
-                                  className={`block h-full rounded-full ${
-                                    isLit ? 'bg-white' : 'bg-red-500'
-                                  }`}
-                                  style={{ width: `${share}%` }}
-                                />
-                              </span>
-                              <span className="text-xs font-bold tabular-nums">
-                                {activeCounts[mistakeId]}
-                              </span>
-                            </span>
-                          </div>
-                        </th>
-                      )
-                    })}
-
-                    <th className="w-14 pb-2">
-                      <span className="sr-only">
-                        {labels.active} + {labels.reopened}
-                      </span>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {students.map((student) => {
-                    const nickname = getLocalizedText(student.nickname, language)
-                    const statuses = MISTAKE_IDS.map(
-                      (mistakeId) => fingerprints[student.id]?.[mistakeId] || 'none'
-                    )
-                    const needsHelp = statuses.filter((status) =>
-                      ['active', 'reopened'].includes(status)
-                    ).length
-                    const fixedCount = statuses.filter(
-                      (status) => status === 'provisionally_fixed'
-                    ).length
-                    const improvingCount = statuses.filter(
-                      (status) => status === 'improving'
-                    ).length
-                    const fixedArc = (fixedCount / MISTAKE_IDS.length) * AVATAR_RING
-                    const improvingArc =
-                      (improvingCount / MISTAKE_IDS.length) * AVATAR_RING
-
-                    return (
-                      <tr key={student.id} className="group">
-                        <td className="sticky left-0 z-10 bg-white pr-3">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/teacher/student/${student.id}`)}
-                            className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2 text-left font-semibold text-slate-800 ring-1 ring-slate-200 transition group-hover:bg-indigo-50 group-hover:text-indigo-700 group-hover:ring-indigo-200"
-                          >
-                            <span
-                              title={`${statusLabel('provisionally_fixed')} ${fixedCount}/${MISTAKE_IDS.length} · ${statusLabel('improving')} ${improvingCount}/${MISTAKE_IDS.length}`}
-                              className="relative flex h-10 w-10 shrink-0 items-center justify-center"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                viewBox="0 0 40 40"
-                                className="absolute inset-0 -rotate-90"
-                                fill="none"
-                              >
-                                <circle
-                                  cx="20"
-                                  cy="20"
-                                  r="17"
-                                  strokeWidth="3.5"
-                                  className="stroke-slate-200"
-                                />
-                                {improvingCount > 0 && (
+                                <svg
+                                  aria-hidden="true"
+                                  viewBox="0 0 40 40"
+                                  className="absolute inset-0 -rotate-90"
+                                  fill="none"
+                                >
                                   <circle
                                     cx="20"
                                     cy="20"
                                     r="17"
                                     strokeWidth="3.5"
-                                    strokeDasharray={`${improvingArc} ${AVATAR_RING}`}
-                                    strokeDashoffset={-fixedArc}
-                                    className="stroke-amber-400"
+                                    className="stroke-[#DCE7E2]"
                                   />
-                                )}
-                                {fixedCount > 0 && (
-                                  <circle
-                                    cx="20"
-                                    cy="20"
-                                    r="17"
-                                    strokeWidth="3.5"
-                                    strokeLinecap="round"
-                                    strokeDasharray={`${fixedArc} ${AVATAR_RING}`}
-                                    className="stroke-emerald-500"
-                                  />
-                                )}
-                              </svg>
-                              <span
-                                aria-hidden="true"
-                                className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 transition group-hover:bg-indigo-600 group-hover:text-white"
-                              >
-                                {Array.from(nickname)[0] || ''}
-                              </span>
-                            </span>
-                            <span className="truncate">{nickname}</span>
-                          </button>
-                        </td>
-
-                        {MISTAKE_IDS.map((mistakeId, index) => {
-                          const status = statuses[index]
-
-                          return (
-                            <td
-                              key={mistakeId}
-                              onMouseEnter={() => setHoverColumn(mistakeId)}
-                              onMouseLeave={() => setHoverColumn(null)}
-                              className="px-1.5"
-                            >
-                              <div
-                                className={`group/cell relative flex h-12 items-center justify-center rounded-xl ring-1 ring-inset ring-white/20 transition duration-150 hover:-translate-y-0.5 hover:brightness-105 ${
-                                  TILE_STYLES[status] || TILE_STYLES.none
-                                }`}
-                              >
-                                <StatusGlyph status={status} className="h-6 w-6" />
-                                <span className="sr-only">{statusLabel(status)}</span>
-
+                                  {improvingCount > 0 && (
+                                    <circle
+                                      cx="20"
+                                      cy="20"
+                                      r="17"
+                                      strokeWidth="3.5"
+                                      strokeDasharray={`${improvingArc} ${AVATAR_RING}`}
+                                      strokeDashoffset={-fixedArc}
+                                      className="stroke-[#F6C453]"
+                                    />
+                                  )}
+                                  {fixedCount > 0 && (
+                                    <circle
+                                      cx="20"
+                                      cy="20"
+                                      r="17"
+                                      strokeWidth="3.5"
+                                      strokeLinecap="round"
+                                      strokeDasharray={`${fixedArc} ${AVATAR_RING}`}
+                                      className="stroke-[#397F78]"
+                                    />
+                                  )}
+                                </svg>
                                 <span
                                   aria-hidden="true"
-                                  className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition group-hover/cell:opacity-100"
+                                  className="flex h-7 w-7 items-center justify-center rounded-full bg-[#254C49] text-xs font-bold text-white"
                                 >
-                                  {statusLabel(status)}
+                                  {Array.from(nickname)[0] || ''}
                                 </span>
-                              </div>
-                            </td>
-                          )
-                        })}
+                              </span>
+                              <span className="truncate">{nickname}</span>
+                            </button>
+                          </td>
 
-                        <td className="pl-2 text-center">
-                          {needsHelp > 0 && (
-                            <span
-                              title={`${labels.active} + ${labels.reopened}`}
-                              className="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white"
-                            >
-                              {needsHelp}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                          {MISTAKE_IDS.map((mistakeId, index) => {
+                            const status = statuses[index]
+
+                            return (
+                              <td
+                                key={mistakeId}
+                                onMouseEnter={() => setHoverColumn(mistakeId)}
+                                onMouseLeave={() => setHoverColumn(null)}
+                                className="px-1.5"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    navigate(
+                                      `/teacher/student/${student.id}?mistake=${mistakeId}`
+                                    )
+                                  }
+                                  aria-label={`View ${nickname}'s ${mistakeId} mistake history`}
+                                  title={`View ${mistakeId} mistake history`}
+                                  className={`group/cell relative flex h-12 w-full items-center justify-center rounded-2xl transition duration-150 hover:-translate-y-0.5 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-[#254C49] focus:ring-offset-2 ${
+                                    TILE_STYLES[status] || TILE_STYLES.none
+                                  }`}
+                                >
+                                  <StatusGlyph status={status} className="h-6 w-6" />
+                                  <span className="sr-only">{statusLabel(status)}. Open mistake history.</span>
+
+                                  <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -top-8 z-20 whitespace-nowrap rounded-lg bg-[#254C49] px-2 py-1 text-[11px] font-semibold text-white opacity-0 shadow-lg transition group-hover/cell:opacity-100"
+                                  >
+                                    {statusLabel(status)} · View history
+                                  </span>
+                                </button>
+                              </td>
+                            )
+                          })}
+
+                          <td className="pl-2 text-center">
+                            {needsHelp > 0 && (
+                              <span
+                                title={`${labels.active} + ${labels.reopened}`}
+                                className="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-[#E8735F] px-2 text-xs font-bold text-white"
+                              >
+                                {needsHelp}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mb-8 rounded-[2rem] border border-[#F2E3A8] bg-[#FFF8DC] p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF0BD] text-xl">
+              💡
             </div>
+            <h2 className="text-xl font-black text-[#254C49]">
+              {getLocalizedText(t('teacher.plan.title'), language)}
+            </h2>
+          </div>
+
+          {!showRecommendation ? (
+            <p className="mt-4 text-[#6F6A4D]">
+              {labels.insufficient} ({studentsWithAttempts}/3)
+            </p>
+          ) : tomorrowMistake ? (
+            <>
+              <p className="mt-4 text-[#254C49]">
+                {labels.focus}{' '}
+                <strong className="rounded-lg bg-[#FFF0BD] px-2 py-0.5">
+                  {tomorrowMistake.id}: {tomorrowMistakeName}
+                </strong>
+              </p>
+
+              <p className="mt-3 text-[#4B5A57]">{tomorrowActivity}</p>
+
+              <p className="mt-3 text-sm font-semibold text-[#8A6A24]">
+                {activeCounts[tomorrowMistakeId]} {labels.affected}
+              </p>
+            </>
+          ) : (
+            <p className="mt-4 text-[#6F6A4D]">{labels.noPlan}</p>
           )}
-        </div>
-      </section>
+        </section>
 
-      <section className="mb-8 rounded-xl border border-indigo-100 bg-indigo-50 p-5 sm:p-6">
-        <h2 className="text-xl font-bold text-slate-900">
-          {getLocalizedText(t('teacher.plan.title'), language)}
-        </h2>
+        <section className="rounded-[2rem] border border-[#DCE7E2] bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-black text-[#254C49]">{labels.progress}</h2>
 
-        {!showRecommendation ? (
-          <p className="mt-3 text-slate-700">
-            {labels.insufficient} ({studentsWithAttempts}/3)
+            <p className="text-2xl font-black text-[#397F78]">
+              {students.length
+                ? `${Math.round((studentsWithAttempts / students.length) * 100)}%`
+                : '0%'}
+            </p>
+          </div>
+
+          <p className="mt-2 text-[#718582]">
+            {studentsWithAttempts} / {students.length} {labels.attemptedCount}
           </p>
-        ) : tomorrowMistake ? (
-          <>
-            <p className="mt-3 text-slate-800">
-              {labels.focus}{' '}
-              <strong>
-                {tomorrowMistake.id}: {tomorrowMistakeName}
-              </strong>
-            </p>
 
-            <p className="mt-2 text-slate-700">{tomorrowActivity}</p>
-
-            <p className="mt-3 text-sm text-slate-600">
-              {activeCounts[tomorrowMistakeId]} {labels.affected}
-            </p>
-          </>
-        ) : (
-          <p className="mt-3 text-slate-700">{labels.noPlan}</p>
-        )}
-      </section>
-
-      <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-xl font-bold text-slate-900">{labels.progress}</h2>
-
-        <p className="mt-2 text-slate-600">
-          {studentsWithAttempts} / {students.length} {labels.attemptedCount}
-        </p>
-
-        <div
-          className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100"
-          role="progressbar"
-          aria-valuenow={
-            students.length
-              ? Math.round((studentsWithAttempts / students.length) * 100)
-              : 0
-          }
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={labels.progress}
-        >
           <div
-            className="h-full rounded-full bg-indigo-600 transition-all"
-            style={{
-              width: `${
-                students.length
-                  ? (studentsWithAttempts / students.length) * 100
-                  : 0
-              }%`,
-            }}
-          />
-        </div>
+            className="mt-4 h-3 overflow-hidden rounded-full bg-[#EAF4F1]"
+            role="progressbar"
+            aria-valuenow={
+              students.length
+                ? Math.round((studentsWithAttempts / students.length) * 100)
+                : 0
+            }
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={labels.progress}
+          >
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#397F78] to-[#6FB5A8] transition-all duration-500"
+              style={{
+                width: `${
+                  students.length
+                    ? (studentsWithAttempts / students.length) * 100
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+        </section>
 
-        <p className="mt-2 text-sm text-slate-500">
-          {students.length
-            ? `${Math.round((studentsWithAttempts / students.length) * 100)}%`
-            : '0%'}
+        <p className="mt-10 text-center text-sm text-[#91A19C]">
+          THINKFIX · Don't just mark the mistake. Understand it.
         </p>
-      </section>
+      </div>
     </main>
   )
 }

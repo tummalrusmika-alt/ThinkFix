@@ -1,4 +1,3 @@
-
 import {
   collection,
   doc,
@@ -10,248 +9,182 @@ import {
   where,
   orderBy,
   serverTimestamp,
-} from "firebase/firestore";
+} from 'firebase/firestore'
 
 import {
   signInWithEmailAndPassword,
   signOut,
   signInAnonymously,
-} from "firebase/auth";
+} from 'firebase/auth'
 
-import { auth, db } from "./firebase.js";
-import { getFingerprintStatus } from "./fingerprint.js";
-import { getNextStep as calculateNextStep } from "./nextStep.js";
+import { auth, db } from './firebase.js'
 
-// Student joins a class using a class code
-export async function joinClass(studentId, classCode) {
-  if (!studentId || !classCode) {
-    throw new Error("studentId and classCode are required");
+export async function joinClass(studentUid, classCode) {
+  if (!studentUid || !classCode) {
+    throw new Error('Student ID and class code are required.')
   }
 
-  if (auth.currentUser?.uid !== studentId) {
-    throw new Error("You can only join a class using your own account");
+  if (auth.currentUser?.uid !== studentUid) {
+    throw new Error('You can only join a class using your own account.')
   }
 
-  const codeSnapshot = await getDoc(doc(db, "classCodes", classCode));
+  const cleanCode = classCode.trim().toUpperCase()
+  const codeSnapshot = await getDoc(doc(db, 'classCodes', cleanCode))
 
   if (!codeSnapshot.exists()) {
-    throw new Error("Invalid class code");
+    throw new Error('Invalid class code')
   }
 
-  const classId = codeSnapshot.data().classId;
+  const classId = codeSnapshot.data().classId
 
   if (!classId) {
-    throw new Error("Class code has no valid class");
+    throw new Error('Class code has no valid class.')
   }
 
   await setDoc(
-    doc(db, "students", studentId),
+    doc(db, 'students', studentUid),
     {
+      authUid: studentUid,
+      nickname: '',
       classId,
       joinedAt: serverTimestamp(),
     },
     { merge: true }
-  );
+  )
 
-  return { classId };
+  return { classId }
 }
 
-// Get questions for a class
-export async function getQuestions(classId) {
-  if (!classId) throw new Error("classId is required");
-
-  const q = query(
-    collection(db, "questions"),
-    where("classId", "==", classId)
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-}
-
-// Get mistakes recorded for a student
-export async function getMistakes(studentId) {
-  if (!studentId) throw new Error("studentId is required");
-
-  const q = query(
-    collection(db, "mistakes"),
-    where("studentId", "==", studentId)
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-}
-
-// Teacher login
 export async function teacherLogin(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+  return signInWithEmailAndPassword(auth, email, password)
 }
 
-// Teacher logout
 export async function teacherLogout() {
-  return signOut(auth);
+  return signOut(auth)
 }
 
-// Student anonymous login
 export async function studentLogin() {
-  return signInAnonymously(auth);
+  // Clear the previous student's session on this shared device.
+  if (auth.currentUser) {
+    await signOut(auth)
+  }
+
+  // Create a fresh Firebase anonymous account.
+  return await signInAnonymously(auth)
 }
 
-// Save a student's attempt
 export async function saveAttempt(attempt) {
-  if (!attempt || typeof attempt !== "object") {
-    throw new Error("A valid attempt is required");
+  if (!attempt || typeof attempt !== 'object') {
+    throw new Error('A valid attempt is required.')
   }
 
   const {
-    studentId,
+    studentUid,
+    runId,
     questionId,
     classId,
-    correct,
+    selectedOptionId,
     mistakeId,
-    type = "solve",
-    isRepeat = false,
-  } = attempt;
+    isCorrect,
+    step = 'solve',
+  } = attempt
 
-  if (!studentId || !questionId || !classId) {
-    throw new Error("studentId, questionId, and classId are required");
+  if (!studentUid || !questionId || !classId || !runId) {
+    throw new Error('Student, question, class and run IDs are required.')
   }
 
-  if (auth.currentUser?.uid !== studentId) {
-    throw new Error("You can only save attempts for your own account");
+  if (auth.currentUser?.uid !== studentUid) {
+    throw new Error('You can only save attempts for your own account.')
   }
 
-  if (typeof correct !== "boolean") {
-    throw new Error("correct must be true or false");
-  }
-
-  if (!["solve", "test"].includes(type)) {
-    throw new Error("Attempt type must be solve or test");
-  }
-
-  if (typeof isRepeat !== "boolean") {
-    throw new Error("isRepeat must be true or false");
+  if (typeof isCorrect !== 'boolean') {
+    throw new Error('isCorrect must be true or false.')
   }
 
   const attemptData = {
-    studentId,
+    studentUid,
+    runId,
     questionId,
     classId,
-    correct,
-    mistakeId: mistakeId ?? null,
-    type,
-    isRepeat,
-    isValid: true,
+    selectedOptionId: selectedOptionId || null,
+    mistakeId: mistakeId || null,
+    isCorrect,
+    step,
+    createdAt: new Date().toISOString(),
     timestamp: serverTimestamp(),
-  };
-
-  const result = await addDoc(
-    collection(db, "attempts"),
-    attemptData
-  );
-
-  return { id: result.id };
-}
-
-// Get attempts for one student
-export async function getStudentAttempts(studentId) {
-  if (!studentId) throw new Error("studentId is required");
-
-  const q = query(
-    collection(db, "attempts"),
-    where("studentId", "==", studentId),
-    orderBy("timestamp", "asc")
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-}
-
-// Get one class
-export async function getClass(classId) {
-  if (!classId) throw new Error("classId is required");
-
-  const classSnapshot = await getDoc(doc(db, "classes", classId));
-
-  if (!classSnapshot.exists()) return null;
-
-  return {
-    id: classSnapshot.id,
-    ...classSnapshot.data(),
-  };
-}
-
-// Get students in a class
-export async function getStudents(classId) {
-  if (!classId) throw new Error("classId is required");
-
-  const q = query(
-    collection(db, "students"),
-    where("classId", "==", classId)
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-}
-
-// Get all attempts for a class
-export async function getClassAttempts(classId) {
-  if (!classId) throw new Error("classId is required");
-
-  const q = query(
-    collection(db, "attempts"),
-    where("classId", "==", classId),
-    orderBy("timestamp", "asc")
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-}
-
-// Get the fingerprint status for a student and a mistake
-export async function getFingerprint(studentId, mistakeId) {
-  if (!studentId || !mistakeId) {
-    throw new Error("studentId and mistakeId are required");
   }
 
-  const q = query(
-    collection(db, "attempts"),
-    where("studentId", "==", studentId),
-    where("mistakeId", "==", mistakeId),
-    orderBy("timestamp", "asc")
-  );
+  const result = await addDoc(collection(db, 'attempts'), attemptData)
 
-  const snapshot = await getDocs(q);
-
-  const attempts = snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
-
-  return getFingerprintStatus(attempts);
+  return { id: result.id }
 }
 
-// Get the next learning step based on score
-export function getNextStep(scorePercent) {
-  return calculateNextStep(scorePercent);
+export async function getStudentAttempts(studentUid) {
+  if (!studentUid) throw new Error('Student ID is required.')
+
+  const q = query(
+    collection(db, 'attempts'),
+    where('studentUid', '==', studentUid),
+    orderBy('timestamp', 'asc')
+  )
+
+  const snapshot = await getDocs(q)
+
+  return snapshot.docs.map(item => ({
+    id: item.id,
+    ...item.data(),
+  }))
+}
+
+export async function getClass(classId) {
+  if (!classId) throw new Error('Class ID is required.')
+
+  const snapshot = await getDoc(doc(db, 'classes', classId))
+
+  return snapshot.exists()
+    ? { id: snapshot.id, ...snapshot.data() }
+    : null
+}
+
+export async function getStudents(classId) {
+  const q = query(
+    collection(db, 'students'),
+    where('classId', '==', classId)
+  )
+
+  const snapshot = await getDocs(q)
+
+  return snapshot.docs.map(item => ({
+    id: item.id,
+    ...item.data(),
+  }))
+}
+
+export async function getClassAttempts(classId) {
+  const q = query(
+    collection(db, 'attempts'),
+    where('classId', '==', classId),
+    orderBy('timestamp', 'asc')
+  )
+
+  const snapshot = await getDocs(q)
+
+  return snapshot.docs.map(item => ({
+    id: item.id,
+    ...item.data(),
+  }))
+}
+
+export async function getMistakes(classId) {
+  const q = query(
+    collection(db, 'mistakes'),
+    where('classId', '==', classId)
+  )
+
+  const snapshot = await getDocs(q)
+
+  return snapshot.docs.map(item => ({
+    id: item.id,
+    ...item.data(),
+  }))
 }

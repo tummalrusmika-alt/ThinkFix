@@ -1,0 +1,103 @@
+
+[
+  {
+    "id": "a01",
+    "studentUid": "u01",
+    "questionId": "q01",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M1",
+    "isCorrect": false,
+    "step": "solve",
+    "createdAt": "2026-10-27T09:00:00Z"
+  },
+  {
+    "id": "a02",
+    "studentUid": "u01",
+    "questionId": "q02",
+    "selectedOptionId": "opt-correct",
+    "mistakeId": "M1",
+    "isCorrect": true,
+    "step": "test",
+    "createdAt": "2026-10-27T09:05:00Z"
+  },
+  {
+    "id": "a03",
+    "studentUid": "u01",
+    "questionId": "q03",
+    "selectedOptionId": "opt-correct",
+    "mistakeId": "M1",
+    "isCorrect": true,
+    "step": "test",
+    "createdAt": "2026-10-27T09:10:00Z"
+  },
+  {
+    "id": "a04",
+    "studentUid": "u02",
+    "questionId": "q04",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M2",
+    "isCorrect": false,
+    "step": "solve",
+    "createdAt": "2026-10-27T09:15:00Z"
+  },
+  {
+    "id": "a05",
+    "studentUid": "u02",
+    "questionId": "q05",
+    "selectedOptionId": "opt-correct",
+    "mistakeId": "M2",
+    "isCorrect": true,
+    "step": "test",
+    "createdAt": "2026-10-27T09:20:00Z"
+  },
+  {
+    "id": "a06",
+    "studentUid": "u03",
+    "questionId": "q06",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M3",
+    "isCorrect": false,
+    "step": "solve",
+    "createdAt": "2026-10-27T09:25:00Z"
+  },
+  {
+    "id": "a07",
+    "studentUid": "u03",
+    "questionId": "q07",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M3",
+    "isCorrect": false,
+    "step": "test",
+    "createdAt": "2026-10-27T09:30:00Z"
+  },
+  {
+    "id": "a08",
+    "studentUid": "u04",
+    "questionId": "q08",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M4",
+    "isCorrect": false,
+    "step": "solve",
+    "createdAt": "2026-10-27T09:35:00Z"
+  },
+  {
+    "id": "a09",
+    "studentUid": "u04",
+    "questionId": "q09",
+    "selectedOptionId": "opt-correct",
+    "mistakeId": "M4",
+    "isCorrect": true,
+    "step": "test",
+    "createdAt": "2026-10-27T09:40:00Z"
+  },
+  {
+    "id": "a10",
+    "studentUid": "u05",
+    "questionId": "q10",
+    "selectedOptionId": "opt-wrong",
+    "mistakeId": "M5",
+    "isCorrect": false,
+    "step": "solve",
+    "createdAt": "2026-10-27T09:45:00Z"
+  }
+]

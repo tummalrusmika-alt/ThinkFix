@@ -1,0 +1,10 @@
+ 
+[
+  {
+    "id": "class6a",
+    "className": "Class 6A",
+    "topicIds": ["fractions"],
+    "teacherUid": "sample-teacher",
+    "classCode": "FIX123"
+  }
+]

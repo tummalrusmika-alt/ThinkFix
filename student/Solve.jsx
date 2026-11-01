@@ -1,18 +1,21 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import {
   getQuestions,
-  saveAttempt,
+  saveAttempt as saveLocalAttempt,
   getStudentSession
 } from '../lib/data'
+
+import { saveAttempt as saveFirebaseAttempt } from '../api'
 import { pick, t } from '../lib/i18n'
 
 const workedSolutions = {
   Q1: {
     en: 'The denominators are equal, so keep 4. Add the numerators: 1 + 2 = 3. Answer: 3/4.',
     te: 'హారాలు సమానంగా ఉన్నాయి కాబట్టి 4నే ఉంచాలి. లవాలను కలపాలి: 1 + 2 = 3. సమాధానం: 3/4.',
-    hi: 'हर समान हैं, इसलिए 4 ही रहेगा। अंश जोड़ें: 1 + 2 = 3। उत्तर: 3/4।'
+    hi: 'हर समान हैं, इसलिए 4 ही रहेगा। अंश जोड़ें: 1 + 2 = 3। उत्तर: 3/4。'
   },
   Q2: {
     en: 'Keep the denominator 7 and add the numerators: 3 + 2 = 5. Answer: 5/7.',
@@ -25,74 +28,73 @@ const workedSolutions = {
     hi: 'हर समान हैं। अंश जोड़ें: 1 + 4 = 5 और हर 6 ही रखें। उत्तर: 5/6।'
   },
   Q4: {
-    en: 'Multiply both the numerator and denominator of 1/2 by 2: 2/4 is equivalent to 1/2.',
+    en: 'Multiply both the numerator and denominator of 1/2 by 2: (1 × 2)/(2 × 2) = 2/4. So 2/4 is equivalent to 1/2.',
     te: '1/2 లో లవాన్ని, హారాన్ని 2తో గుణిస్తే 2/4 వస్తుంది. కాబట్టి 2/4 అనేది 1/2కు సమానమైన భిన్నం.',
     hi: '1/2 के अंश और हर दोनों को 2 से गुणा करें: 2/4 मिलता है। इसलिए 2/4, 1/2 के बराबर है।'
   },
   Q5: {
-    en: 'Multiply the numerator and denominator of 2/3 by 2: 2/3 = 4/6. Answer: 4.',
+    en: 'The denominator 3 is multiplied by 2 to become 6. Multiply the numerator 2 by 2 as well: 2/3 = 4/6. Answer: 4.',
     te: 'హారం 3ను 2తో గుణిస్తే 6 వస్తుంది. లవం 2ను కూడా 2తో గుణించాలి: 2/3 = 4/6. సమాధానం: 4.',
     hi: 'हर 3 को 2 से गुणा करके 6 बनाया गया है। अंश 2 को भी 2 से गुणा करें: 2/3 = 4/6। उत्तर: 4।'
   },
   Q6: {
-    en: 'Divide both 6 and 8 by 2: 6/8 = 3/4.',
-    te: '6, 8 రెండింటినీ 2తో భాగించాలి: 6/8 = 3/4.',
-    hi: '6 और 8 दोनों को 2 से भाग दें: 6/8 = 3/4।'
+    en: 'Divide both 6 and 8 by their greatest common factor, 2: 6/8 = 3/4. Answer: 3/4.',
+    te: '6, 8 రెండింటినీ వాటి గరిష్ఠ సామాన్య కారణాంకం 2తో భాగించాలి: 6/8 = 3/4. సమాధానం: 3/4.',
+    hi: '6 और 8 दोनों को उनके महत्तम समापवर्तक 2 से भाग दें: 6/8 = 3/4। उत्तर: 3/4।'
   },
   Q7: {
-    en: 'Divide the numerator and denominator by 5: 10/15 = 2/3.',
-    te: 'లవం, హారం రెండింటినీ 5తో భాగించాలి: 10/15 = 2/3.',
-    hi: 'अंश और हर दोनों को 5 से भाग दें: 10/15 = 2/3।'
+    en: 'Divide the numerator and denominator by 5: 10/15 = (10 ÷ 5)/(15 ÷ 5) = 2/3. Answer: 2/3.',
+    te: 'లవం, హారం రెండింటినీ 5తో భాగించాలి: 10/15 = 2/3. సమాధానం: 2/3.',
+    hi: 'अंश और हर दोनों को 5 से भाग दें: 10/15 = 2/3। उत्तर: 2/3।'
   },
   Q8: {
-    en: 'Both fractions have numerator 1. The smaller positive denominator gives the larger fraction, so 1/3 > 1/4.',
+    en: 'Both fractions have numerator 1. When the numerator is the same, the smaller positive denominator gives the larger fraction. Therefore, 1/3 > 1/4.',
     te: 'రెండు భిన్నాల్లో లవం 1. లవాలు సమానంగా ఉన్నప్పుడు చిన్న హారం ఉన్న భిన్నం పెద్దది. కాబట్టి 1/3 > 1/4.',
     hi: 'दोनों भिन्नों का अंश 1 है। समान अंश होने पर छोटा धनात्मक हर बड़ी भिन्न देता है। इसलिए 1/3 > 1/4।'
   },
   Q9: {
-    en: 'Use denominator 15: 3/5 = 9/15 and 2/3 = 10/15. Therefore, 2/3 is greater.',
-    te: 'హారం 15గా మార్చాలి: 3/5 = 9/15, 2/3 = 10/15. కాబట్టి 2/3 పెద్దది.',
-    hi: 'हर 15 लें: 3/5 = 9/15 और 2/3 = 10/15। इसलिए 2/3 बड़ा है।'
+    en: 'Use denominator 15: 3/5 = 9/15 and 2/3 = 10/15. Since 10/15 > 9/15, 2/3 is greater.',
+    te: 'హారం 15గా మార్చాలి: 3/5 = 9/15, 2/3 = 10/15. 10/15 పెద్దది కాబట్టి 2/3 పెద్దది.',
+    hi: 'हर 15 लें: 3/5 = 9/15 और 2/3 = 10/15। क्योंकि 10/15 > 9/15, इसलिए 2/3 बड़ा है।'
   },
   Q10: {
-    en: 'These are unit fractions. A larger positive denominator means a smaller piece, so 1/8 is the smallest.',
+    en: 'These are unit fractions. A larger positive denominator means a smaller piece. Therefore, 1/8 is the smallest.',
     te: 'ఇవి ఏక లవ భిన్నాలు. హారం ఎక్కువైతే ప్రతి భాగం చిన్నదవుతుంది. కాబట్టి 1/8 అతి చిన్నది.',
     hi: 'ये इकाई भिन्न हैं। धनात्मक हर जितना बड़ा होगा, प्रत्येक भाग उतना छोटा होगा। इसलिए 1/8 सबसे छोटा है।'
   },
   T1: {
-    en: 'Add 2 + 1 = 3 and keep denominator 5. Answer: 3/5.',
-    te: '2 + 1 = 3 చేసి హారం 5నే ఉంచాలి. సమాధానం: 3/5.',
-    hi: '2 + 1 = 3 करें और हर 5 ही रखें। उत्तर: 3/5।'
+    en: 'The denominators are equal. Add 2 + 1 = 3 and keep denominator 5. Answer: 3/5.',
+    te: 'హారాలు సమానంగా ఉన్నాయి. 2 + 1 = 3 చేసి హారం 5నే ఉంచాలి. సమాధానం: 3/5.',
+    hi: 'हर समान हैं। 2 + 1 = 3 करें और हर 5 ही रखें। उत्तर: 3/5।'
   },
   T2: {
-    en: 'Multiply the numerator and denominator of 3/4 by 2: 3/4 = 6/8.',
-    te: '3/4లో లవాన్ని, హారాన్ని 2తో గుణిస్తే 6/8 వస్తుంది.',
-    hi: '3/4 के अंश और हर दोनों को 2 से गुणा करें: 6/8 मिलता है।'
+    en: 'Multiply both numerator and denominator of 3/4 by 2: 3/4 = 6/8. The missing numerator is 6.',
+    te: '3/4లో లవాన్ని, హారాన్ని 2తో గుణిస్తే 6/8 వస్తుంది. కావలసిన లవం 6.',
+    hi: '3/4 के अंश और हर दोनों को 2 से गुणा करें: 6/8 मिलता है। लुप्त अंश 6 है।'
   },
   T3: {
-    en: 'Divide both 4 and 12 by 4: 4/12 = 1/3.',
-    te: '4, 12 రెండింటినీ 4తో భాగించాలి: 4/12 = 1/3.',
-    hi: '4 और 12 दोनों को 4 से भाग दें: 4/12 = 1/3।'
+    en: 'Divide both 4 and 12 by 4: 4/12 = 1/3. Answer: 1/3.',
+    te: '4, 12 రెండింటినీ 4తో భాగించాలి: 4/12 = 1/3. సమాధానం: 1/3.',
+    hi: '4 और 12 दोनों को 4 से भाग दें: 4/12 = 1/3। उत्तर: 1/3।'
   },
   T4: {
-    en: 'Use denominator 35: 2/5 = 14/35 and 3/7 = 15/35. Therefore, 3/7 is greater.',
-    te: 'హారం 35గా మార్చాలి: 2/5 = 14/35, 3/7 = 15/35. కాబట్టి 3/7 పెద్దది.',
-    hi: 'हर 35 लें: 2/5 = 14/35 और 3/7 = 15/35। इसलिए 3/7 बड़ा है।'
+    en: 'Use denominator 35: 2/5 = 14/35 and 3/7 = 15/35. Since 15/35 > 14/35, 3/7 is greater.',
+    te: 'హారం 35గా మార్చాలి: 2/5 = 14/35, 3/7 = 15/35. 15/35 పెద్దది కాబట్టి 3/7 పెద్దది.',
+    hi: 'हर 35 लें: 2/5 = 14/35 और 3/7 = 15/35। क्योंकि 15/35 > 14/35, इसलिए 3/7 बड़ा है।'
   },
   T5: {
-    en: 'Add the numerators: 3 + 4 = 7 and keep denominator 9. Answer: 7/9.',
-    te: 'లవాలను కలపాలి: 3 + 4 = 7. హారం 9నే ఉంచాలి. సమాధానం: 7/9.',
-    hi: 'अंश जोड़ें: 3 + 4 = 7 और हर 9 ही रखें। उत्तर: 7/9।'
+    en: 'The denominators are equal. Add the numerators: 3 + 4 = 7. Keep denominator 9. Answer: 7/9.',
+    te: 'హారాలు సమానంగా ఉన్నాయి. లవాలను కలపాలి: 3 + 4 = 7. హారం 9నే ఉంచాలి. సమాధానం: 7/9.',
+    hi: 'हर समान हैं। अंश जोड़ें: 3 + 4 = 7 और हर 9 ही रखें। उत्तर: 7/9।'
   }
 }
 
 function getOptionId(option) {
-  return typeof option === 'string' ? option : option?.id
+  return typeof option === 'string' ? option : option.id
 }
 
 function getOptionText(option) {
-  if (typeof option === 'string') return option
-  return getLocalized(option?.text)
+  return typeof option === 'string' ? option : pick(option.text)
 }
 
 function getLocalized(value) {
@@ -113,143 +115,157 @@ export default function Solve() {
   const [selected, setSelected] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    let active = true
-
     try {
       const session = getStudentSession()
 
-      if (!session?.studentUid || !session?.diagnosticRunId) {
-        navigate('/join', { replace: true })
+      if (
+        !session ||
+        !(session.studentUid || session.id) ||
+        !session.diagnosticRunId
+      ) {
+        navigate('/join')
         return
       }
 
       const loaded = getQuestions(session.classId, null, 'diagnostic')
 
-      if (!Array.isArray(loaded)) {
-        throw new Error('getQuestions did not return an array')
-      }
+      console.log('STUDENT SESSION:', session)
+      console.log('QUESTIONS LOADED:', loaded.length)
 
-      if (active) setQuestions(loaded)
+      setQuestions(loaded)
     } catch (err) {
       console.error('Question loading failed:', err)
-      if (active) setError('Could not load questions. Please try again.')
+      setError('Could not load questions. Please try again.')
     } finally {
-      if (active) setLoading(false)
-    }
-
-    return () => {
-      active = false
+      setLoading(false)
     }
   }, [navigate])
 
-  function handleCheck(event) {
+  async function handleCheck(event) {
     event.preventDefault()
 
-    if (feedback || !selected) return
+    if (!selected || feedback || saving) return
 
     const session = getStudentSession()
     const question = questions[current]
+    const studentUid = session?.studentUid || session?.id
 
-    if (!session?.studentUid || !session?.diagnosticRunId || !question) {
+    if (!session || !studentUid || !question) {
       setError('Your session or question is missing. Please rejoin the class.')
       return
     }
 
-    const options = Array.isArray(question.options) ? question.options : []
-    const selectedOption = options.find(
-      option => getOptionId(option) === selected
-    )
-    const correctOption = options.find(
+    const correct = selected === question.correctOptionId
+
+    const correctOption = question.options?.find(
       option => getOptionId(option) === question.correctOptionId
     )
 
-    if (!selectedOption || !correctOption) {
-      console.error('Invalid question data:', {
-        questionId: question.id,
-        correctOptionId: question.correctOptionId,
-        selectedOptionId: selected,
-        availableOptionIds: options.map(getOptionId)
-      })
-
-      setError('This question has invalid answer data. Check the browser console.')
+    if (!correctOption) {
+      setError('This question has no valid correct answer.')
       return
     }
 
-    const correct = selected === question.correctOptionId
     const mistakeId = correct
       ? null
       : question.mistakeByOption?.[selected] ?? null
 
+    const attemptData = {
+      studentUid,
+      runId: session.diagnosticRunId,
+      questionId: question.id,
+      classId: session.classId,
+      selectedOptionId: selected,
+      mistakeId,
+      isCorrect: correct,
+      step: 'solve',
+      createdAt: new Date().toISOString()
+    }
+
+    setSaving(true)
+    setError('')
+
     try {
-      saveAttempt({
-        studentUid: session.studentUid,
-        runId: session.diagnosticRunId,
-        questionId: question.id,
-        selectedOptionId: selected,
-        mistakeId,
-        isCorrect: correct,
-        step: 'solve',
-        createdAt: new Date().toISOString()
-      })
+      // 1. Save locally first. Result, Learn and Test depend on this.
+      saveLocalAttempt(attemptData)
+
+      // 2. Save to Firebase, but do not block the student if it fails.
+      try {
+        await saveFirebaseAttempt(attemptData)
+      } catch (firebaseError) {
+        console.warn('Firebase save failed (continuing):', firebaseError)
+      }
 
       setFeedback({
         correct,
         correctAnswer: getOptionText(correctOption),
         explanation: getSolution(question.id)
       })
-
-      setError('')
     } catch (err) {
       console.error('Saving answer failed:', err)
       setError('Your answer could not be saved. Please try again.')
+    } finally {
+      setSaving(false)
     }
   }
 
   function handleContinue() {
-    if (!feedback) return
-
     if (current < questions.length - 1) {
       setCurrent(value => value + 1)
       setSelected('')
       setFeedback(null)
       setError('')
-      return
+    } else {
+      navigate('/result')
     }
-
-    navigate('/result')
   }
 
   if (loading) {
-    return <main style={{ padding: 24 }}>Loading questions...</main>
+    return (
+      <main style={{
+        padding: 24,
+        background: '#FFFCF5',
+        minHeight: '100vh',
+        color: '#345B59',
+      }}>
+        Loading questions...
+      </main>
+    )
   }
 
   if (error && questions.length === 0) {
     return (
-      <main style={{ padding: 24 }}>
+      <main style={{
+        padding: 24,
+        background: '#FFFCF5',
+        minHeight: '100vh',
+        color: '#345B59',
+      }}>
         <p role="alert">{error}</p>
-        <button type="button" onClick={() => navigate('/join')}>
-          Back to Join
-        </button>
+        <button onClick={() => navigate('/join')}>Back to Join</button>
       </main>
     )
   }
 
   if (questions.length === 0) {
     return (
-      <main style={{ padding: 24 }}>
+      <main style={{
+        padding: 24,
+        background: '#FFFCF5',
+        minHeight: '100vh',
+        color: '#345B59',
+      }}>
         <p>No diagnostic questions are available for this class.</p>
-        <button type="button" onClick={() => navigate('/join')}>
-          Back to Join
-        </button>
+        <button onClick={() => navigate('/join')}>Back to Join</button>
       </main>
     )
   }
 
   const question = questions[current]
-  const options = Array.isArray(question?.options) ? question.options : []
 
   return (
     <main
@@ -258,87 +274,140 @@ export default function Solve() {
         margin: '24px auto',
         padding: 24,
         fontFamily: 'Arial, sans-serif',
-        lineHeight: 1.6
+        lineHeight: 1.6,
+        background: '#FFFCF5',
+        borderRadius: 20,
+        color: '#344F50',
       }}
     >
-      <h1>ThinkFix</h1>
-      <p>{t('student.solve')}</p>
-      <p>Question {current + 1} of {questions.length}</p>
-      <h2>{getLocalized(question.text)}</h2>
+      <h1 style={{ color: '#477C72' }}>ThinkFix</h1>
 
-      <form onSubmit={handleCheck}>
-        {options.map(option => {
-          const id = getOptionId(option)
-          if (!id) return null
+      <p style={{ color: '#647B78' }}>{t('student.solve')}</p>
 
-          const isRight =
-            Boolean(feedback) && id === question.correctOptionId
+      <p style={{
+        color: '#477C72',
+        fontWeight: 'bold',
+      }}>
+        Question {current + 1} of {questions.length}
+      </p>
 
-          const isWrongSelected =
-            Boolean(feedback) &&
-            id === selected &&
-            !feedback.correct
+      <div
+        style={{
+          height: 8,
+          background: '#E4EAE8',
+          borderRadius: 10,
+          overflow: 'hidden',
+          marginBottom: 24
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: `${((current + 1) / questions.length) * 100}%`,
+            background: '#477C72',
+            transition: 'width 0.2s'
+          }}
+        />
+      </div>
 
-          return (
-            <label
-              key={id}
+      <section style={{
+        padding: 20,
+        background: '#F0F7F5',
+        border: '1px solid #D7E8E3',
+        borderRadius: 16,
+      }}>
+        <h2 style={{ color: '#345B59' }}>
+          {getLocalized(question.text)}
+        </h2>
+
+        <form onSubmit={handleCheck}>
+          {question.options.map(option => {
+            const id = getOptionId(option)
+
+            const isRight = feedback && id === question.correctOptionId
+            const isWrongSelected =
+              feedback && id === selected && !feedback.correct
+
+            return (
+              <label
+                key={id}
+                style={{
+                  display: 'block',
+                  padding: 14,
+                  margin: '10px 0',
+                  border: `2px solid ${
+                    isRight
+                      ? '#16A34A'
+                      : isWrongSelected
+                        ? '#EF4444'
+                        : selected === id
+                          ? '#477C72'
+                          : '#D7E8E3'
+                  }`,
+                  borderRadius: 12,
+                  background: isRight
+                    ? '#DCFCE7'
+                    : isWrongSelected
+                      ? '#FEE2E2'
+                      : selected === id
+                        ? '#DDEFEF'
+                        : '#FFFFFF',
+                  cursor: feedback ? 'default' : 'pointer',
+                  color: '#344F50',
+                }}
+              >
+                <input
+                  type="radio"
+                  name={`answer-${question.id}`}
+                  value={id}
+                  checked={selected === id}
+                  disabled={Boolean(feedback) || saving}
+                  onChange={() => setSelected(id)}
+                />
+
+                {' '}{getOptionText(option)}
+
+                {isRight && (
+                  <strong style={{ color: '#15803D' }}>
+                    {' '}✓ Correct answer
+                  </strong>
+                )}
+
+                {isWrongSelected && (
+                  <strong style={{ color: '#DC2626' }}>
+                    {' '}— Your answer
+                  </strong>
+                )}
+              </label>
+            )
+          })}
+
+          {error && (
+            <p role="alert" style={{ color: '#DC2626' }}>
+              {error}
+            </p>
+          )}
+
+          {!feedback && (
+            <button
+              type="submit"
+              disabled={!selected || saving}
               style={{
-                display: 'block',
-                padding: 12,
-                margin: '8px 0',
-                border: '1px solid #ccc',
-                borderRadius: 8,
-                background: isRight
-                  ? '#e8f7ec'
-                  : isWrongSelected
-                    ? '#fdeaea'
-                    : selected === id
-                      ? '#eef4ff'
-                      : '#fff'
+                padding: '12px 24px',
+                marginTop: 12,
+                background: selected && !saving ? '#477C72' : '#CBD5D1',
+                color: 'white',
+                border: 0,
+                borderRadius: 10,
+                cursor: selected && !saving ? 'pointer' : 'not-allowed',
+                fontWeight: 'bold',
               }}
             >
-              <input
-                type="radio"
-                name={`answer-${question.id}`}
-                value={id}
-                checked={selected === id}
-                disabled={Boolean(feedback)}
-                onChange={() => {
-                  setSelected(id)
-                  setError('')
-                }}
-              />
-              {' '}{getOptionText(option)}
-              {isRight && <strong> ✓ Correct answer</strong>}
-              {isWrongSelected && <strong> — Your answer</strong>}
-            </label>
-          )
-        })}
-
-        {error && (
-          <p role="alert" style={{ color: '#b91c1c' }}>
-            {error}
-          </p>
-        )}
-
-        {!feedback && (
-          <button
-            type="submit"
-            disabled={!selected}
-            style={{
-              padding: '12px 24px',
-              marginTop: 12,
-              background: selected ? '#2563eb' : '#9ca3af',
-              color: 'white',
-              border: 0,
-              borderRadius: 8,
-              cursor: selected ? 'pointer' : 'not-allowed'
-            }}
-          >
-            Check Answer
-          </button>
-        )}
-      </form>
+              {saving ? 'Saving...' : 'Check Answer'}
+            </button>
+          )}
+        </form>
+      </section>
 
       {feedback && (
         <section
@@ -346,26 +415,33 @@ export default function Solve() {
           style={{
             marginTop: 24,
             padding: 18,
-            border: `2px solid ${feedback.correct ? '#15803d' : '#b91c1c'}`,
-            borderRadius: 12
+            border: `2px solid ${feedback.correct ? '#16A34A' : '#EF4444'}`,
+            borderRadius: 14,
+            background: feedback.correct ? '#F0FDF4' : '#FFF5F5',
+            color: '#344F50',
           }}
         >
-          <h2>
+          <h2 style={{
+            color: feedback.correct ? '#15803D' : '#DC2626',
+          }}>
             {feedback.correct
               ? '✓ Correct! Well done.'
               : '✗ Not quite. Let’s understand why.'}
           </h2>
 
           <p>
-            <strong>Correct answer: </strong>
-            {feedback.correctAnswer}
+            <strong>Correct answer:</strong> {feedback.correctAnswer}
           </p>
 
-          <h3>Step-by-step explanation</h3>
-          <p>
-            {feedback.explanation ||
-              'A worked explanation has not been added for this question yet.'}
-          </p>
+          <h3 style={{ color: '#477C72' }}>
+            Step-by-step explanation
+          </h3>
+
+          {feedback.explanation ? (
+            <p>{feedback.explanation}</p>
+          ) : (
+            <p>A worked explanation has not been added for this question yet.</p>
+          )}
 
           <button
             type="button"
@@ -373,11 +449,12 @@ export default function Solve() {
             style={{
               padding: '12px 24px',
               marginTop: 12,
-              background: '#2563eb',
+              background: '#477C72',
               color: 'white',
               border: 0,
-              borderRadius: 8,
-              cursor: 'pointer'
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontWeight: 'bold',
             }}
           >
             {current === questions.length - 1 ? 'View Results' : 'Continue'}

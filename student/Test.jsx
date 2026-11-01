@@ -1,394 +1,245 @@
 
-import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   getQuestions,
   saveAttempt,
   getStudentSession,
-  getFocusMistake
+  getResolvedFocusMistake
 } from '../lib/data'
-import { getNextStep } from '../lib/nextStep'
-import { pick, t } from '../lib/i18n'
-
-function createId() {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID()
-  }
-
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
+import { pick } from '../lib/i18n'
 
 export default function Test() {
   const navigate = useNavigate()
-  const [testRunId] = useState(() => createId())
-  const savingRef = useRef(false)
 
   const [questions, setQuestions] = useState([])
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState('')
-  const [correctCount, setCorrectCount] = useState(0)
-  const [answered, setAnswered] = useState(false)
-  const [feedback, setFeedback] = useState(null)
-  const [done, setDone] = useState(false)
+  const [score, setScore] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [finished, setFinished] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-
     try {
       const session = getStudentSession()
 
-      if (!session?.studentUid) {
-        navigate('/join', { replace: true })
+      if (!session?.classId || !(session.studentUid || session.id)) {
+        setError(
+          'Please join your class and complete the diagnostic first.'
+        )
         return
       }
 
-      let pool = getQuestions(session.classId, null, 'test')
+      const focus = getResolvedFocusMistake(false)
 
-      if (pool.length < 3) {
-        pool = getQuestions(
-          session.classId,
-          null,
-          'test',
-          { excludeSeen: false }
+      if (!focus?.id) {
+        setError(
+          'Complete the Solve activity first so ThinkFix can identify your focus mistake.'
         )
+        return
       }
 
-      const focus = getFocusMistake()
+      const pool = getQuestions(session.classId, null, 'test')
 
-      const sorted = [...pool].sort(
-        (a, b) =>
-          Number(b.targetMistake === focus) -
-          Number(a.targetMistake === focus)
+      const focusQuestions = pool.filter(question =>
+        String(question.targetMistake || '').toUpperCase() ===
+        String(focus.id).toUpperCase()
       )
 
-      if (!cancelled) {
-        setQuestions(sorted.slice(0, 3))
+      if (focusQuestions.length < 3) {
+        setError(
+          `There are only ${focusQuestions.length} fresh questions for ${focus.id}. Please ask your teacher to add more.`
+        )
+        return
       }
+
+      const shuffled = [...focusQuestions].sort(
+        () => Math.random() - 0.5
+      )
+
+      setQuestions(shuffled.slice(0, 3))
     } catch (err) {
-      console.error('Could not load test questions:', err)
-
-      if (!cancelled) {
-        setError('Could not load the test. Please try again.')
-      }
+      console.error('Test loading error:', err)
+      setError('Unable to load the test. Please try again.')
     } finally {
-      if (!cancelled) {
-        setLoading(false)
-      }
+      setLoading(false)
+    }
+  }, [])
+
+  function handleAnswer() {
+    const question = questions[current]
+
+    if (!selected || !question) return
+
+    const isCorrect = selected === question.correctOptionId
+    const session = getStudentSession()
+
+    try {
+      saveAttempt({
+        studentUid: session?.studentUid || session?.id,
+        studentId: session?.studentUid || session?.id,
+        classId: session?.classId,
+        questionId: question.id,
+        step: 'test',
+        selectedOptionId: selected,
+        isCorrect,
+        correct: isCorrect,
+        targetMistake: question.targetMistake,
+        mistakeId: null,
+        createdAt: new Date().toISOString()
+      })
+    } catch (err) {
+      console.error('Could not save test answer:', err)
+      setError('Your answer could not be saved. Please try again.')
+      return
     }
 
-    return () => {
-      cancelled = true
+    if (isCorrect) {
+      setScore(value => value + 1)
     }
-  }, [navigate])
 
-  function retryTest() {
-    window.location.reload()
+    setSelected('')
+
+    if (current + 1 < questions.length) {
+      setCurrent(value => value + 1)
+    } else {
+      setFinished(true)
+    }
   }
 
   if (loading) {
     return (
-      <main style={{ padding: 24 }}>
-        <p>{t('student.loading')}</p>
-      </main>
+      <div className="p-6 text-center">
+        Loading your test...
+      </div>
     )
   }
 
-  if (error && questions.length === 0) {
+  if (error) {
     return (
-      <main style={{ padding: 24 }}>
-        <h1>{t('student.test')}</h1>
-        <p role="alert" style={{ color: 'crimson' }}>{error}</p>
-
-        <button type="button" onClick={retryTest}>
-          Retry
-        </button>
-
-        <button type="button" onClick={() => navigate('/join')}>
-          Start again
-        </button>
-      </main>
-    )
-  }
-
-  if (questions.length === 0) {
-    return (
-      <main style={{ padding: 24 }}>
-        <h1>{t('student.test')}</h1>
-        <p>{t('student.noQuestions')}</p>
-        <Link to="/learn">Return to lesson</Link>
-      </main>
-    )
-  }
-
-  if (done) {
-    const score = Math.round(
-      (correctCount / questions.length) * 100
-    )
-
-    const next = getNextStep(score)
-
-    const targets = {
-      relearn: '/learn',
-      practise: '/solve',
-      challenge: '/fingerprint'
-    }
-
-    return (
-      <main
-        style={{
-          maxWidth: 640,
-          margin: '30px auto',
-          padding: 24,
-          fontFamily: 'Arial, sans-serif',
-          lineHeight: 1.6
-        }}
-      >
-        <h1>{t('student.test')}</h1>
-
-        <h2>
-          {t('student.score')}: {correctCount}/{questions.length} ({score}%)
+      <div className="max-w-xl mx-auto p-6 text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-3">
+          Test unavailable
         </h2>
 
-        <p>{t(`student.step.${next}`)}</p>
-        <Link to={targets[next]}>{t('student.next')} →</Link>
-
-        <p style={{ marginTop: 20 }}>
-          <Link to="/fingerprint">
-            {t('student.viewFingerprint')} →
-          </Link>
+        <p className="text-gray-600 mb-5">
+          {error}
         </p>
-      </main>
+
+        <button
+          type="button"
+          onClick={() => navigate('/student/dashboard')}
+          className="px-5 py-3 rounded-lg bg-blue-600 text-white"
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    )
+  }
+
+  if (finished) {
+    const percent = Math.round(
+      (score / questions.length) * 100
+    )
+
+    const nextStep =
+      percent <= 39
+        ? 'Re-learn'
+        : percent <= 75
+          ? 'Practise'
+          : 'Challenge'
+
+    return (
+      <div className="max-w-xl mx-auto p-6 text-center">
+        <h2 className="text-3xl font-bold mb-4">
+          Test Completed!
+        </h2>
+
+        <p className="text-xl mb-2">
+          Your score: {score}/{questions.length}
+        </p>
+
+        <p className="text-lg font-semibold mb-2">
+          {percent}%
+        </p>
+
+        <p className="text-gray-700 mb-5">
+          Recommended next step: {nextStep}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => navigate('/student/dashboard')}
+          className="px-5 py-3 rounded-lg bg-blue-600 text-white"
+        >
+          Back to Dashboard
+        </button>
+      </div>
     )
   }
 
   const question = questions[current]
 
-  if (!question) {
-    return (
-      <main style={{ padding: 24 }}>
-        <h1>{t('student.test')}</h1>
-        <p role="alert">The current question could not be loaded.</p>
-        <button type="button" onClick={() => navigate('/learn')}>
-          Return to lesson
-        </button>
-      </main>
-    )
-  }
-
-  const options = Array.isArray(question.options)
-    ? question.options
-    : []
-
-  const correctOption = options.find(
-    option => option.id === question.correctOptionId
-  )
-
-  function handleNext() {
-    if (savingRef.current) return
-
-    if (!answered) {
-      if (!selected) {
-        setError('Please select an answer.')
-        return
-      }
-
-      if (options.length === 0) {
-        setError('This question has no answer options.')
-        return
-      }
-
-      const session = getStudentSession()
-
-      if (!session?.studentUid) {
-        navigate('/join', { replace: true })
-        return
-      }
-
-      const isCorrect = selected === question.correctOptionId
-
-      savingRef.current = true
-      setError('')
-
-      try {
-        saveAttempt({
-          studentUid: session.studentUid,
-          runId: testRunId,
-          questionId: question.id,
-          selectedOptionId: selected,
-          mistakeId: isCorrect
-            ? null
-            : question.mistakeByOption?.[selected] ?? null,
-          isCorrect,
-          step: 'test',
-          createdAt: new Date().toISOString()
-        })
-
-        if (isCorrect) {
-          setCorrectCount(count => count + 1)
-        }
-
-        setFeedback({
-          isCorrect,
-          correctAnswer: correctOption
-            ? pick(correctOption.text)
-            : question.correctOptionId
-        })
-
-        setAnswered(true)
-      } catch (err) {
-        console.error('Could not save test attempt:', err)
-        setError('Could not save your answer. Please try again.')
-      } finally {
-        savingRef.current = false
-      }
-
-      return
-    }
-
-    if (current < questions.length - 1) {
-      setCurrent(index => index + 1)
-      setSelected('')
-      setAnswered(false)
-      setFeedback(null)
-      setError('')
-    } else {
-      setDone(true)
-    }
-  }
+  if (!question) return null
 
   return (
-    <main
-      style={{
-        maxWidth: 640,
-        margin: '30px auto',
-        padding: 24,
-        fontFamily: 'Arial, sans-serif',
-        lineHeight: 1.6
-      }}
-    >
-      <h1>{t('student.test')}</h1>
+    <div className="max-w-2xl mx-auto p-6">
 
-      <p>Question {current + 1} of {questions.length}</p>
-      <h2>{pick(question.text)}</h2>
+      <div className="flex justify-between items-center mb-6 gap-3">
+        <h2 className="text-2xl font-bold">
+          Focus Test
+        </h2>
 
-      {options.length === 0 ? (
-        <section>
-          <p role="alert">
-            No answer options are available for this question.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (current < questions.length - 1) {
-                setCurrent(index => index + 1)
-                setSelected('')
-                setAnswered(false)
-                setFeedback(null)
-                setError('')
-              } else {
-                setDone(true)
-              }
-            }}
-          >
-            {current === questions.length - 1
-              ? t('student.finish')
-              : t('student.next')}
-          </button>
-        </section>
-      ) : (
-        <div style={{ display: 'grid', gap: 12, maxWidth: 420 }}>
-          {options.map(option => {
-            const isSelected = selected === option.id
-            const isCorrectOption =
-              answered && option.id === question.correctOptionId
-            const isWrongSelection =
-              answered && isSelected && !feedback?.isCorrect
+        <span className="text-sm font-semibold text-blue-600">
+          Question {current + 1} of {questions.length}
+        </span>
+      </div>
 
-            return (
-              <button
-                key={option.id}
-                type="button"
-                disabled={answered}
-                onClick={() => {
-                  setSelected(option.id)
-                  setError('')
-                }}
-                style={{
-                  padding: 12,
-                  textAlign: 'left',
-                  border: isCorrectOption
-                    ? '2px solid #16a34a'
-                    : isWrongSelection
-                      ? '2px solid #dc2626'
-                      : isSelected
-                        ? '2px solid #2563eb'
-                        : '1px solid #ccc',
-                  borderRadius: 8,
-                  background: isCorrectOption
-                    ? '#dcfce7'
-                    : isWrongSelection
-                      ? '#fee2e2'
-                      : isSelected
-                        ? '#eff6ff'
-                        : '#fff',
-                  cursor: answered ? 'default' : 'pointer'
-                }}
-              >
-                {pick(option.text)}
-              </button>
-            )
-          })}
+      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+        <div
+          className="bg-blue-600 h-2 rounded-full transition-all"
+          style={{
+            width: `${((current + 1) / questions.length) * 100}%`
+          }}
+        />
+      </div>
 
-          {error && (
-            <p role="alert" style={{ color: 'crimson' }}>{error}</p>
-          )}
+      <div className="bg-white rounded-xl shadow-md p-6">
 
-          {feedback && (
-            <section
-              aria-live="polite"
-              style={{
-                marginTop: 8,
-                padding: 16,
-                borderRadius: 8,
-                background: feedback.isCorrect ? '#f0fdf4' : '#fef2f2'
-              }}
+        <h3 className="text-lg font-semibold mb-6">
+          {pick(question.text)}
+        </h3>
+
+        <div className="space-y-3">
+          {question.options?.map(option => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => setSelected(option.id)}
+              className={`w-full text-left p-4 border rounded-lg transition ${
+                selected === option.id
+                  ? 'border-blue-600 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
             >
-              <h3>
-                {feedback.isCorrect ? 'Correct! 🎉' : 'Not quite yet.'}
-              </h3>
-
-              {!feedback.isCorrect && (
-                <p>
-                  Correct answer: <strong>{feedback.correctAnswer}</strong>
-                </p>
-              )}
-            </section>
-          )}
-
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={savingRef.current}
-            style={{
-              marginTop: 16,
-              padding: '12px 24px',
-              border: 0,
-              borderRadius: 8,
-              background: '#2563eb',
-              color: 'white',
-              cursor: 'pointer'
-            }}
-          >
-            {!answered
-              ? 'Check answer'
-              : current === questions.length - 1
-                ? t('student.finish')
-                : t('student.next')}
-          </button>
+              {pick(option.text)}
+            </button>
+          ))}
         </div>
-      )}
-    </main>
+
+        <button
+          type="button"
+          onClick={handleAnswer}
+          disabled={!selected}
+          className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+        >
+          {current === questions.length - 1
+            ? 'Finish Test'
+            : 'Next Question'}
+        </button>
+
+      </div>
+    </div>
   )
 }

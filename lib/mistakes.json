@@ -1,0 +1,18 @@
+[
+  {
+    "id": "m1",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "title": "Incorrect inverse operation",
+    "description": "Using addition instead of subtraction when isolating a variable.",
+    "correction": "Perform the same inverse operation on both sides of the equation."
+  },
+  {
+    "id": "m2",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "title": "Incorrect division",
+    "description": "Forgetting to divide both sides by the coefficient of the variable.",
+    "correction": "Divide both sides by the coefficient to find the variable."
+  }
+]

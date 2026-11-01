@@ -1,0 +1,17 @@
+
+[
+  {
+    "id": "class-7a",
+    "className": "Class 7A",
+    "topicIds": ["fractions"],
+    "teacherUid": "teacher-demo-1",
+    "classCode": "FIX701"
+  },
+  {
+    "id": "class-8a",
+    "className": "Class 8A",
+    "topicIds": [],
+    "teacherUid": "teacher-demo-1",
+    "classCode": "FIX801"
+  }
+]

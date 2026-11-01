@@ -1,0 +1,327 @@
+[
+  {
+    "id": "M1",
+    "classId": "class-7a",
+    "topicId": "fractions",
+    "name": {
+      "en": "Adds tops and bottoms",
+      "te": "లవాలను, హారాలను కలపడం",
+      "hi": "अंश और हर दोनों को जोड़ना"
+    },
+    "hint": {
+      "en": "When the denominators are the same, add only the numerators. The denominator stays the same.",
+      "te": "హారాలు సమానంగా ఉన్నప్పుడు లవాలను మాత్రమే కలపండి. హారం మారదు.",
+      "hi": "हर समान हों तो केवल अंश जोड़ें। हर वही रहता है।"
+    },
+    "explanation": {
+      "en": "The denominator tells you the size of each piece (for example, fourths). When you add 1/4 + 2/4, you are counting pieces of the same size, so the pieces do not change. Only the number of pieces changes. 1 piece plus 2 pieces makes 3 pieces of size 'fourth', which is 3/4.",
+      "te": "హారం ప్రతి ముక్క పరిమాణాన్ని తెలుపుతుంది (ఉదాహరణకు నాలుగో భాగాలు). 1/4 + 2/4 కలిపినప్పుడు ఒకే పరిమాణం గల ముక్కలను లెక్కిస్తున్నాం, కాబట్టి ముక్కల పరిమాణం మారదు, ముక్కల సంఖ్య మాత్రమే మారుతుంది. 1 ముక్క + 2 ముక్కలు = 3 ముక్కలు, అంటే 3/4.",
+      "hi": "हर बताता है कि हर टुकड़ा कितना बड़ा है (जैसे चौथाई)। 1/4 + 2/4 जोड़ते समय हम एक ही आकार के टुकड़े गिनते हैं, इसलिए टुकड़ों का आकार नहीं बदलता, केवल संख्या बदलती है। 1 टुकड़ा + 2 टुकड़े = 3 टुकड़े, यानी 3/4।"
+    },
+    "example": {
+      "en": "1/5 + 2/5 = (1 + 2)/5 = 3/5. It is NOT 3/10.",
+      "te": "1/5 + 2/5 = (1 + 2)/5 = 3/5. 3/10 కాదు.",
+      "hi": "1/5 + 2/5 = (1 + 2)/5 = 3/5। 3/10 नहीं।"
+    },
+    "keyIdeas": {
+      "en": [
+        "The denominator names the size of the pieces.",
+        "Adding fractions with the same denominator means counting pieces.",
+        "Think: 1 apple + 2 apples = 3 apples, so 1 fifth + 2 fifths = 3 fifths.",
+        "Check your answer: its denominator should match the question."
+      ]
+    },
+    "tryThese": {
+      "en": [
+        "2/9 + 5/9 = ?  →  7/9",
+        "3/8 + 1/8 = ?  →  4/8 = 1/2",
+        "4/11 + 6/11 = ?  →  10/11"
+      ]
+    },
+    "buddySteps": {
+      "en": [
+        "Check that both denominators are the same.",
+        "Add only the numerators.",
+        "Keep the denominator unchanged.",
+        "Write the answer and simplify if you can."
+      ],
+      "te": [
+        "రెండు హారాలు సమానమో కాదో చూడండి.",
+        "లవాలను మాత్రమే కలపండి.",
+        "హారాన్ని అలాగే ఉంచండి.",
+        "సమాధానం రాసి, వీలైతే సరళీకరించండి."
+      ],
+      "hi": [
+        "जाँचें कि दोनों हर समान हैं।",
+        "केवल अंश जोड़ें।",
+        "हर को वैसा ही रखें।",
+        "उत्तर लिखें और संभव हो तो सरल करें।"
+      ]
+    },
+    "activity": {
+      "en": "Use fraction strips to add 1/4 and 2/4 and count the pieces.",
+      "te": "భిన్నాల పట్టీలతో 1/4 + 2/4 కలిపి ముక్కలను లెక్కించండి.",
+      "hi": "भिन्न पट्टियों से 1/4 + 2/4 जोड़ें और टुकड़े गिनें।"
+    }
+  },
+  {
+    "id": "M2",
+    "classId": "class-7a",
+    "topicId": "fractions",
+    "name": {
+      "en": "Mixes up the numerators",
+      "te": "లవాలను తప్పుగా కలపడం",
+      "hi": "अंशों को गलत तरीके से जोड़ना"
+    },
+    "hint": {
+      "en": "Add the numerators: top + top. Do not subtract them or copy only one of them.",
+      "te": "లవాలను కలపండి: పైది + పైది. తీసివేయవద్దు, ఒక్క లవాన్ని మాత్రమే రాయవద్దు.",
+      "hi": "अंशों को जोड़ें: ऊपर + ऊपर। घटाएँ नहीं और केवल एक अंश न लिखें।"
+    },
+    "explanation": {
+      "en": "When fractions have the same denominator, the numerator of the answer is the SUM of both numerators. Some students subtract (3 − 2) or copy just one numerator, so they get 1/7 or 3/7 instead of 5/7. Adding means putting pieces together, so the number of pieces always grows.",
+      "te": "హారాలు సమానంగా ఉన్నప్పుడు సమాధానంలోని లవం రెండు లవాల మొత్తం అవుతుంది. కొందరు విద్యార్థులు తీసివేస్తారు (3 − 2) లేదా ఒక లవాన్ని మాత్రమే రాస్తారు, అందుకే 5/7కు బదులు 1/7 లేదా 3/7 వస్తుంది. కలపడం అంటే ముక్కలను కలిపి ఉంచడం, కాబట్టి ముక్కల సంఖ్య పెరుగుతుంది.",
+      "hi": "हर समान हों तो उत्तर का अंश दोनों अंशों का योग होता है। कुछ विद्यार्थी घटा देते हैं (3 − 2) या केवल एक अंश लिख देते हैं, इसलिए 5/7 की जगह 1/7 या 3/7 आ जाता है। जोड़ने का अर्थ टुकड़ों को मिलाना है, इसलिए टुकड़ों की संख्या बढ़ती है।"
+    },
+    "example": {
+      "en": "3/7 + 2/7 → 3 + 2 = 5, so the answer is 5/7. The answer is bigger than each fraction we started with.",
+      "te": "3/7 + 2/7 → 3 + 2 = 5, కాబట్టి సమాధానం 5/7. సమాధానం మొదటి భిన్నాల కంటే పెద్దదిగా ఉంటుంది.",
+      "hi": "3/7 + 2/7 → 3 + 2 = 5, इसलिए उत्तर 5/7। उत्तर शुरू के भिन्नों से बड़ा है।"
+    },
+    "keyIdeas": {
+      "en": [
+        "Adding means the total gets bigger.",
+        "Use the plus sign: top + top.",
+        "Estimate first: the answer should be larger than either fraction.",
+        "Draw the pieces if you are unsure."
+      ]
+    },
+    "tryThese": {
+      "en": [
+        "1/6 + 4/6 = ?  →  5/6",
+        "2/5 + 1/5 = ?  →  3/5",
+        "3/9 + 4/9 = ?  →  7/9"
+      ]
+    },
+    "buddySteps": {
+      "en": [
+        "Read the sign: is it + ?",
+        "Write both numerators.",
+        "Add them: top + top.",
+        "Put the sum over the same denominator and check it is bigger than each part."
+      ],
+      "te": [
+        "గుర్తు + అవునో కాదో చూడండి.",
+        "రెండు లవాలను రాయండి.",
+        "వాటిని కలపండి: పైది + పైది.",
+        "మొత్తాన్ని అదే హారంపై రాసి, అది ప్రతి భాగం కంటే పెద్దదని సరిచూడండి."
+      ],
+      "hi": [
+        "चिह्न देखें: क्या यह + है?",
+        "दोनों अंश लिखें।",
+        "उन्हें जोड़ें: ऊपर + ऊपर।",
+        "योग को वही हर देकर लिखें और जाँचें कि वह हर भाग से बड़ा है।"
+      ]
+    },
+    "activity": {
+      "en": "Use fraction strips to add 3/7 and 2/7 and count the pieces.",
+      "te": "భిన్నాల పట్టీలతో 3/7 + 2/7 కలిపి ముక్కలను లెక్కించండి.",
+      "hi": "भिन्न पट्टियों से 3/7 + 2/7 जोड़ें और टुकड़े गिनें।"
+    }
+  },
+  {
+    "id": "M3",
+    "classId": "class-7a",
+    "topicId": "fractions",
+    "name": {
+      "en": "Comparing and equivalent fractions",
+      "te": "పోల్చడం, సమాన భిన్నాల గందరగోళం",
+      "hi": "तुलना और समतुल्य भिन्नों में भ्रम"
+    },
+    "hint": {
+      "en": "Make the denominators the same before you decide which fraction is bigger.",
+      "te": "ఏ భిన్నం పెద్దదో నిర్ణయించే ముందు హారాలను సమానం చేయండి.",
+      "hi": "कौन-सा भिन्न बड़ा है यह तय करने से पहले हर समान करें।"
+    },
+    "explanation": {
+      "en": "The size of a fraction depends on BOTH the numerator and the denominator. Equivalent fractions are different names for the same amount: multiply or divide the top and bottom by the same number (1/2 = 2/4 = 3/6). To compare, change the fractions to a common denominator and then compare the numerators. When the numerators are the same, a bigger denominator gives smaller pieces, so 1/8 < 1/5 < 1/2.",
+      "te": "భిన్నం విలువ లవం, హారం రెండింటిపై ఆధారపడుతుంది. సమాన భిన్నాలు ఒకే విలువకు వేర్వేరు రూపాలు: లవం, హారం రెండింటినీ ఒకే సంఖ్యతో గుణించండి లేదా భాగించండి (1/2 = 2/4 = 3/6). పోల్చడానికి ఉమ్మడి హారం చేసి లవాలను చూడండి. లవాలు సమానమైతే పెద్ద హారం చిన్న ముక్కలను ఇస్తుంది, కాబట్టి 1/8 < 1/5 < 1/2.",
+      "hi": "भिन्न का मान अंश और हर दोनों पर निर्भर करता है। समतुल्य भिन्न एक ही मान के अलग रूप हैं: अंश और हर दोनों को एक ही संख्या से गुणा या भाग करें (1/2 = 2/4 = 3/6)। तुलना के लिए समान हर बनाएँ और अंश देखें। अंश समान हों तो बड़ा हर छोटे टुकड़े देता है, इसलिए 1/8 < 1/5 < 1/2।"
+    },
+    "example": {
+      "en": "Compare 2/5 and 3/7: use denominator 35. 2/5 = 14/35 and 3/7 = 15/35. Since 15 > 14, 3/7 is greater.",
+      "te": "2/5, 3/7 పోల్చండి: హారం 35 తీసుకోండి. 2/5 = 14/35, 3/7 = 15/35. 15 > 14 కాబట్టి 3/7 పెద్దది.",
+      "hi": "2/5 और 3/7 की तुलना: हर 35 लें। 2/5 = 14/35 और 3/7 = 15/35। 15 > 14, इसलिए 3/7 बड़ा है।"
+    },
+    "keyIdeas": {
+      "en": [
+        "Equivalent fractions: multiply or divide the top AND bottom by the same number.",
+        "Same numerator: a bigger denominator means smaller pieces.",
+        "Different denominators: find a common denominator, then compare the numerators.",
+        "1/2 = 2/4 = 3/6 = 4/8"
+      ]
+    },
+    "tryThese": {
+      "en": [
+        "2/3 = ?/6  →  4",
+        "3/4 = ?/8  →  6",
+        "Which is greater, 3/5 or 2/3?  →  2/3 (9/15 compared with 10/15)"
+      ]
+    },
+    "buddySteps": {
+      "en": [
+        "Look at both denominators.",
+        "Find a common denominator.",
+        "Change both fractions using the same multiplier on top and bottom.",
+        "Compare the numerators. The bigger numerator is the bigger fraction."
+      ],
+      "te": [
+        "రెండు హారాలను చూడండి.",
+        "ఉమ్మడి హారాన్ని కనుగొనండి.",
+        "లవం, హారం రెండింటినీ ఒకే సంఖ్యతో గుణించి భిన్నాలను మార్చండి.",
+        "లవాలను పోల్చండి. పెద్ద లవం ఉన్నది పెద్ద భిన్నం."
+      ],
+      "hi": [
+        "दोनों हर देखें।",
+        "समान हर ज्ञात करें।",
+        "अंश और हर दोनों को एक ही संख्या से गुणा करके भिन्न बदलें।",
+        "अंशों की तुलना करें। बड़ा अंश वाला भिन्न बड़ा होता है।"
+      ]
+    },
+    "activity": {
+      "en": "Compare 1/3 and 1/4 using fraction strips.",
+      "te": "భిన్నాల పట్టీలతో 1/3, 1/4 లను పోల్చండి.",
+      "hi": "भिन्न पट्टियों से 1/3 और 1/4 की तुलना करें।"
+    }
+  },
+  {
+    "id": "M4",
+    "classId": "class-7a",
+    "topicId": "fractions",
+    "name": {
+      "en": "Simplifying fractions incorrectly",
+      "te": "భిన్నాన్ని తప్పుగా సరళీకరించడం",
+      "hi": "भिन्न को गलत तरीके से सरल करना"
+    },
+    "hint": {
+      "en": "Divide the numerator and the denominator by the same number. Keep going until nothing else divides both.",
+      "te": "లవం, హారం రెండింటినీ ఒకే సంఖ్యతో భాగించండి; ఇంకా భాగించగలిగేది లేనంత వరకు కొనసాగించండి.",
+      "hi": "अंश और हर दोनों को एक ही संख्या से भाग दें; जब तक और भाग न हो सके, जारी रखें।"
+    },
+    "explanation": {
+      "en": "Simplifying means writing the same amount with smaller numbers. You must divide BOTH the top and bottom by the same common factor. For example, in 6/8 both numbers divide by 2, giving 3/4. If you divide only one part, the value changes. A fraction is in simplest form when the only common factor of the top and bottom is 1. Using the greatest common factor (GCF) finishes the job in one step.",
+      "te": "సరళీకరణ అంటే అదే విలువను చిన్న సంఖ్యలతో రాయడం. లవం, హారం రెండింటినీ ఒకే ఉమ్మడి కారణాంకంతో భాగించాలి. ఉదాహరణకు 6/8లో రెండూ 2తో భాగమవుతాయి, 3/4 వస్తుంది. ఒకదాన్ని మాత్రమే భాగిస్తే విలువ మారిపోతుంది. లవం, హారంకు 1 తప్ప ఉమ్మడి కారణాంకం లేకపోతే భిన్నం సరళ రూపంలో ఉన్నట్టు. గరిష్ఠ సామాన్య కారణాంకం (గసాకా) వాడితే ఒక్క అడుగులో పూర్తవుతుంది.",
+      "hi": "सरल करने का अर्थ है उसी मान को छोटी संख्याओं में लिखना। अंश और हर दोनों को एक ही उभयनिष्ठ गुणनखंड से भाग दें। जैसे 6/8 में दोनों 2 से विभाज्य हैं, इसलिए 3/4 मिलता है। केवल एक को भाग देने से मान बदल जाता है। जब अंश और हर का 1 के अलावा कोई उभयनिष्ठ गुणनखंड न बचे, तब भिन्न सरलतम रूप में है। महत्तम समापवर्तक (HCF) लेने से काम एक ही चरण में हो जाता है।"
+    },
+    "example": {
+      "en": "6/8: factors of 6 are 1, 2, 3, 6 and factors of 8 are 1, 2, 4, 8. The GCF is 2. 6 ÷ 2 = 3 and 8 ÷ 2 = 4, so 6/8 = 3/4. For 10/15 the GCF is 5, so 10/15 = 2/3.",
+      "te": "6/8: 6 కారణాంకాలు 1, 2, 3, 6; 8 కారణాంకాలు 1, 2, 4, 8. గసాకా 2. 6 ÷ 2 = 3, 8 ÷ 2 = 4, కాబట్టి 6/8 = 3/4. 10/15లో గసాకా 5, కాబట్టి 2/3.",
+      "hi": "6/8: 6 के गुणनखंड 1, 2, 3, 6; 8 के गुणनखंड 1, 2, 4, 8। HCF 2 है। 6 ÷ 2 = 3 और 8 ÷ 2 = 4, इसलिए 6/8 = 3/4। 10/15 में HCF 5 है, इसलिए 2/3।"
+    },
+    "keyIdeas": {
+      "en": [
+        "Divide the top AND the bottom by the same number.",
+        "Use the greatest common factor to finish in one step.",
+        "Simplest form: no number except 1 divides both.",
+        "Simplifying never changes the value of the fraction."
+      ]
+    },
+    "tryThese": {
+      "en": [
+        "Simplify 6/8  →  3/4",
+        "Simplify 10/15  →  2/3",
+        "Simplify 4/12  →  1/3"
+      ]
+    },
+    "buddySteps": {
+      "en": [
+        "List the factors of the numerator and the denominator.",
+        "Find the greatest common factor.",
+        "Divide the numerator and denominator by it.",
+        "Check that no common factor except 1 is left."
+      ],
+      "te": [
+        "లవం, హారం కారణాంకాలను రాయండి.",
+        "గరిష్ఠ సామాన్య కారణాంకాన్ని కనుగొనండి.",
+        "లవం, హారం రెండింటినీ దానితో భాగించండి.",
+        "1 తప్ప ఉమ్మడి కారణాంకం మిగలలేదని సరిచూడండి."
+      ],
+      "hi": [
+        "अंश और हर के गुणनखंड लिखें।",
+        "महत्तम समापवर्तक ज्ञात करें।",
+        "अंश और हर दोनों को उससे भाग दें।",
+        "जाँचें कि 1 के अलावा कोई उभयनिष्ठ गुणनखंड नहीं बचा।"
+      ]
+    },
+    "activity": {
+      "en": "Simplify 6/8 to 3/4 using fraction strips.",
+      "te": "భిన్నాల పట్టీలతో 6/8 ను 3/4 గా సరళీకరించండి.",
+      "hi": "भिन्न पट्टियों से 6/8 को 3/4 में सरल करें।"
+    }
+  },
+  {
+    "id": "M5",
+    "classId": "class-7a",
+    "topicId": "fractions",
+    "name": {
+      "en": "Mixed and improper fraction confusion",
+      "te": "మిశ్రమ, అపక్రమ భిన్నాల గందరగోళం",
+      "hi": "मिश्रित और विषम भिन्नों में भ्रम"
+    },
+    "hint": {
+      "en": "Whole number × denominator, then add the numerator. Keep the same denominator.",
+      "te": "పూర్ణ సంఖ్య × హారం, తర్వాత లవాన్ని కలపండి. హారం అలాగే ఉంచండి.",
+      "hi": "पूर्ण संख्या × हर, फिर अंश जोड़ें। हर वही रखें।"
+    },
+    "explanation": {
+      "en": "A mixed number such as 2 1/3 means 2 wholes and 1/3 more. Each whole contains 3 thirds, so 2 wholes = 6 thirds. Add the extra 1 third and you get 7 thirds = 7/3. The denominator never changes, only the count of pieces does. An improper fraction has a numerator that is bigger than or equal to its denominator.",
+      "te": "2 1/3 వంటి మిశ్రమ భిన్నంలో 2 పూర్ణాలు, ఇంకా 1/3 ఉంటాయి. ప్రతి పూర్ణంలో 3 మూడో భాగాలు ఉంటాయి, కాబట్టి 2 పూర్ణాలు = 6 మూడో భాగాలు. మరో 1 మూడో భాగం కలిపితే 7 మూడో భాగాలు = 7/3. హారం మారదు, ముక్కల సంఖ్య మాత్రమే మారుతుంది. లవం హారం కంటే పెద్దగా లేదా సమానంగా ఉంటే అది అపక్రమ భిన్నం.",
+      "hi": "2 1/3 जैसे मिश्रित भिन्न में 2 पूर्ण और 1/3 और होता है। हर पूर्ण में 3 तिहाई होते हैं, इसलिए 2 पूर्ण = 6 तिहाई। एक और तिहाई जोड़ने पर 7 तिहाई = 7/3। हर नहीं बदलता, केवल टुकड़ों की संख्या बदलती है। जिस भिन्न का अंश हर से बड़ा या बराबर हो वह विषम भिन्न है।"
+    },
+    "example": {
+      "en": "2 1/3 → (2 × 3) + 1 = 7, keep the denominator 3 → 7/3. To go back: 7 ÷ 3 = 2 remainder 1, so 7/3 = 2 1/3.",
+      "te": "2 1/3 → (2 × 3) + 1 = 7, హారం 3 అలాగే → 7/3. తిరిగి: 7 ÷ 3 = 2 శేషం 1, కాబట్టి 7/3 = 2 1/3.",
+      "hi": "2 1/3 → (2 × 3) + 1 = 7, हर 3 वही → 7/3। वापस: 7 ÷ 3 = 2 शेष 1, इसलिए 7/3 = 2 1/3।"
+    },
+    "keyIdeas": {
+      "en": [
+        "Mixed number = whole number + proper fraction.",
+        "Improper fraction: the numerator is bigger than or equal to the denominator.",
+        "The denominator stays the same when converting.",
+        "To go back: divide the numerator by the denominator. The remainder is the new numerator."
+      ]
+    },
+    "tryThese": {
+      "en": [
+        "1 3/4 as an improper fraction  →  7/4",
+        "3 1/2 as an improper fraction  →  7/2",
+        "5/2 as a mixed number  →  2 1/2"
+      ]
+    },
+    "buddySteps": {
+      "en": [
+        "Multiply the whole number by the denominator.",
+        "Add the numerator to that answer.",
+        "Keep the same denominator.",
+        "Write the new improper fraction and check it."
+      ],
+      "te": [
+        "పూర్ణ సంఖ్యను హారంతో గుణించండి.",
+        "ఆ లబ్ధానికి లవాన్ని కలపండి.",
+        "హారాన్ని అలాగే ఉంచండి.",
+        "కొత్త అపక్రమ భిన్నాన్ని రాసి సరిచూడండి."
+      ],
+      "hi": [
+        "पूर्ण संख्या को हर से गुणा करें।",
+        "उस गुणनफल में अंश जोड़ें।",
+        "हर को वैसा ही रखें।",
+        "नया विषम भिन्न लिखें और जाँचें।"
+      ]
+    },
+    "activity": {
+      "en": "Convert 2 1/3 to an improper fraction using fraction strips.",
+      "te": "భిన్నాల పట్టీలతో 2 1/3 ను అపక్రమ భిన్నంగా మార్చండి.",
+      "hi": "भिन्न पट्टियों से 2 1/3 को विषम भिन्न में बदलें।"
+    }
+  }
+]

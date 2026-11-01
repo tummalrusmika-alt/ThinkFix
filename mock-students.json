@@ -1,0 +1,15 @@
+
+[
+  {"id":"s01","authUid":"u01","nickname":"Aarav","classId":"class-7a"},
+  {"id":"s02","authUid":"u02","nickname":"Meera","classId":"class-7a"},
+  {"id":"s03","authUid":"u03","nickname":"Ravi","classId":"class-7a"},
+  {"id":"s04","authUid":"u04","nickname":"Anaya","classId":"class-7a"},
+  {"id":"s05","authUid":"u05","nickname":"Kabir","classId":"class-7a"},
+  {"id":"s06","authUid":"u06","nickname":"Diya","classId":"class-7a"},
+  {"id":"s07","authUid":"u07","nickname":"Arjun","classId":"class-7a"},
+  {"id":"s08","authUid":"u08","nickname":"Isha","classId":"class-7a"},
+  {"id":"s09","authUid":"u09","nickname":"Neel","classId":"class-7a"},
+  {"id":"s10","authUid":"u10","nickname":"Tara","classId":"class-7a"},
+  {"id":"s11","authUid":"u11","nickname":"Dev","classId":"class-7a"},
+  {"id":"s12","authUid":"u12","nickname":"Mira","classId":"class-7a"}
+]
