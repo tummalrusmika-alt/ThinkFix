@@ -107,6 +107,18 @@ function getSolution(questionId) {
   return solution ? pick(solution) : ''
 }
 
+// Only change: shuffle option order while keeping original option IDs.
+function shuffleOptions(options = []) {
+  const shuffled = [...options]
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+
+  return shuffled
+}
+
 export default function Solve() {
   const navigate = useNavigate()
 
@@ -136,7 +148,13 @@ export default function Solve() {
       console.log('STUDENT SESSION:', session)
       console.log('QUESTIONS LOADED:', loaded.length)
 
-      setQuestions(loaded)
+      // Shuffle options for every question. Do not change correctOptionId.
+      const shuffledQuestions = loaded.map(question => ({
+        ...question,
+        options: shuffleOptions(question.options || [])
+      }))
+
+      setQuestions(shuffledQuestions)
     } catch (err) {
       console.error('Question loading failed:', err)
       setError('Could not load questions. Please try again.')
@@ -190,10 +208,8 @@ export default function Solve() {
     setError('')
 
     try {
-      // 1. Save locally first. Result, Learn and Test depend on this.
       saveLocalAttempt(attemptData)
 
-      // 2. Save to Firebase, but do not block the student if it fails.
       try {
         await saveFirebaseAttempt(attemptData)
       } catch (firebaseError) {
