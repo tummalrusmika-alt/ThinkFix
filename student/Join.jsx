@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { doc, setDoc } from 'firebase/firestore'
@@ -8,6 +7,10 @@ import { saveStudentSession } from '../lib/data'
 import { studentLogin, joinClass } from '../api.js'
 import { t } from '../lib/i18n'
 import LanguageToggle from '../components/LanguageToggle'
+
+// Demo credentials: the class code must already exist in your Firebase classes
+const DEMO_CLASS_CODE = 'DEMO123' // replace with a real class code from your database
+const DEMO_NICKNAME = 'DemoStudent'
 
 function createId() {
   if (globalThis.crypto?.randomUUID) {
@@ -24,6 +27,12 @@ export default function Join() {
   const [nickname, setNickname] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  function fillDemo() {
+    setClassCode(DEMO_CLASS_CODE)
+    setNickname(DEMO_NICKNAME)
+    setMessage('')
+  }
 
   async function handleJoin(event) {
     event.preventDefault()
@@ -308,6 +317,33 @@ export default function Join() {
               </button>
 
             </form>
+
+            {/* Demo credentials */}
+            <div className="mt-6 rounded-2xl border border-dashed border-[#397F78]/40 bg-[#DDEFEF]/40 p-5">
+              <p className="text-xs font-black tracking-[0.2em] text-[#397F78]">
+                DEMO CREDENTIALS
+              </p>
+
+              <div className="mt-3 space-y-1 text-sm text-[#254C49]">
+                <p>
+                  <span className="font-bold">Class Code:</span>{' '}
+                  <span className="font-mono">{DEMO_CLASS_CODE}</span>
+                </p>
+                <p>
+                  <span className="font-bold">Nickname:</span>{' '}
+                  <span className="font-mono">{DEMO_NICKNAME}</span>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={fillDemo}
+                disabled={loading}
+                className="mt-4 rounded-lg border border-[#397F78] bg-white px-4 py-2 text-sm font-bold text-[#397F78] transition hover:bg-[#397F78] hover:text-white disabled:opacity-60"
+              >
+                Use demo credentials
+              </button>
+            </div>
 
             {/* Bottom note */}
             <div className="mt-8 rounded-2xl border border-[#E8E2FA] bg-[#F6F3FF] p-5">
