@@ -2,10 +2,90 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>thinkfix-student</title>
+    <meta name="theme-color" content="#254C49" />
+
+    <title>ThinkFix | Learn from Mistakes</title>
+    <meta
+      name="description"
+      content="ThinkFix helps students join class practice, solve questions, and learn from mistakes. Teachers can review student progress and common learning gaps."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ThinkFix" />
+    <meta property="og:title" content="ThinkFix | Learn from Mistakes" />
+    <meta
+      property="og:description"
+      content="Students practise questions and learn from mistakes. Teachers review class progress and common learning gaps."
+    />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="ThinkFix | Learn from Mistakes" />
+    <meta
+      name="twitter:description"
+      content="Students practise questions and learn from mistakes. Teachers review class progress and common learning gaps."
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "ThinkFix",
+            "description": "A learning app for student practice and teacher class progress."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "ThinkFix",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web browser",
+            "description": "ThinkFix helps students practise questions, review mistakes, and improve. Teachers can review class progress and common learning gaps."
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is ThinkFix?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "ThinkFix is a learning app where students join a class, solve questions, and review mistakes. Teachers can review class progress and common mistakes."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does a student use ThinkFix?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A student joins a class with the code from their teacher, solves questions, and reviews feedback on mistakes."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What can teachers do with ThinkFix?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Teachers can review class progress, spot common mistakes, and open individual student details."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does ThinkFix help students learn from mistakes?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "ThinkFix shows feedback after an answer and provides learning and practice focused on mistakes."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/main.jsx"></script>
