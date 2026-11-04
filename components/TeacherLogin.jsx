@@ -3,12 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { auth } from '../firebase.js'
 import { teacherLogin } from '../api.js'
 
+const DEMO_EMAIL = 'teacher@thinkfix.demo'
+const DEMO_PASSWORD = 'ThinkFix123'
+
 export default function TeacherLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  function fillDemo() {
+    setEmail(DEMO_EMAIL)
+    setPassword(DEMO_PASSWORD)
+    setError('')
+  }
 
   async function handleLogin(event) {
     event.preventDefault()
@@ -185,7 +194,7 @@ export default function TeacherLogin() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="Enter your teacher email"
+                placeholder="teacher@thinkfix.demo"
                 autoComplete="username"
                 required
                 className="w-full rounded-xl border border-[#DCE7E2] bg-[#FFFCF5] px-4 py-4 text-sm text-[#254C49] outline-none transition placeholder:text-[#A3B1AC] focus:border-[#397F78] focus:ring-4 focus:ring-[#DDEFEF]"
@@ -233,21 +242,33 @@ export default function TeacherLogin() {
 
           </form>
 
-          {/* Teacher Account Information */}
+          {/* Demo credentials */}
           <div className="mt-8 rounded-2xl border border-[#E8E2FA] bg-[#F6F3FF] p-5">
 
             <div className="flex items-center gap-2">
               <span className="text-xl">🔐</span>
 
               <p className="font-bold text-[#65569A]">
-                Secure teacher access
+                Demo credentials
               </p>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-[#5F6077]">
-              Use the teacher email and password registered with
-              your ThinkFix Firebase project.
-            </p>
+            <div className="mt-4 space-y-1 text-sm text-[#5F6077]">
+              <p>
+                Email: <span className="font-semibold">{DEMO_EMAIL}</span>
+              </p>
+              <p>
+                Password: <span className="font-semibold">{DEMO_PASSWORD}</span>
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="mt-4 rounded-xl border border-[#8C7AD1] bg-white px-4 py-2 text-sm font-bold text-[#65569A] transition hover:bg-[#8C7AD1] hover:text-white"
+            >
+              Use demo credentials
+            </button>
 
           </div>
 
