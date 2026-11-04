@@ -1,0 +1,2 @@
+<link rel="canonical" href="https://thinkfix.web.app/welcome" />
+<meta property="og:url" content="https://thinkfix.web.app/welcome" />
