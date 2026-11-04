@@ -1,8 +1,7 @@
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signInAnonymously, signOut } from 'firebase/auth'
 import { auth } from '../firebase.js'
+import { teacherLogin } from '../api.js'
 
 export default function TeacherLogin() {
   const [email, setEmail] = useState('')
@@ -14,31 +13,35 @@ export default function TeacherLogin() {
   async function handleLogin(event) {
     event.preventDefault()
     setError('')
-
-    if (
-      email.trim().toLowerCase() !== 'teacher@thinkfix.demo' ||
-      password !== 'ThinkFix123'
-    ) {
-      setError('Invalid email or password. Please try again.')
-      return
-    }
-
     setLoading(true)
 
     try {
-      // Clear any student session before creating the demo teacher session.
-      if (auth.currentUser) {
-        await signOut(auth)
+      await teacherLogin(email.trim(), password)
+
+      const user = auth.currentUser
+
+      if (!user) {
+        throw new Error('Login was unsuccessful. Please try again.')
       }
 
-      // Firestore rules require a Firebase-authenticated user.
-      await signInAnonymously(auth)
+      sessionStorage.setItem('thinkfixTeacherUid', user.uid)
 
-      sessionStorage.setItem('thinkfixTeacherUid', 'teacher-demo-1')
       navigate('/teacher/dashboard', { replace: true })
     } catch (err) {
       console.error('Teacher login error:', err)
-      setError(err.message || 'Could not sign in to Firebase.')
+
+      if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/invalid-email'
+      ) {
+        setError('Invalid email or password. Please try again.')
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many attempts. Please try again later.')
+      } else {
+        setError(err.message || 'Could not sign in. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -73,8 +76,6 @@ export default function TeacherLogin() {
                 <p className="text-2xl font-black tracking-wide">
                   THINKFIX
                 </p>
-
-               
               </div>
             </div>
 
@@ -184,7 +185,7 @@ export default function TeacherLogin() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="teacher@thinkfix.demo"
+                placeholder="Enter your teacher email"
                 autoComplete="username"
                 required
                 className="w-full rounded-xl border border-[#DCE7E2] bg-[#FFFCF5] px-4 py-4 text-sm text-[#254C49] outline-none transition placeholder:text-[#A3B1AC] focus:border-[#397F78] focus:ring-4 focus:ring-[#DDEFEF]"
@@ -232,35 +233,26 @@ export default function TeacherLogin() {
 
           </form>
 
-          {/* Demo Credentials */}
+          {/* Teacher Account Information */}
           <div className="mt-8 rounded-2xl border border-[#E8E2FA] bg-[#F6F3FF] p-5">
 
             <div className="flex items-center gap-2">
               <span className="text-xl">🔐</span>
 
               <p className="font-bold text-[#65569A]">
-                Demo credentials
+                Secure teacher access
               </p>
             </div>
 
-            <div className="mt-4 space-y-3 text-sm text-[#5F6077]">
-
-              <p>
-                <span className="font-bold">Email:</span>
-                {' '}teacher@thinkfix.demo
-              </p>
-
-              <p>
-                <span className="font-bold">Password:</span>
-                {' '}ThinkFix123
-              </p>
-
-            </div>
+            <p className="mt-4 text-sm leading-6 text-[#5F6077]">
+              Use the teacher email and password registered with
+              your ThinkFix Firebase project.
+            </p>
 
           </div>
 
           <p className="mt-6 text-center text-xs leading-6 text-[#91A19C]">
-            Demo teacher access uses Firebase anonymous authentication.
+            Your teacher account provides access to its assigned class.
           </p>
 
         </div>

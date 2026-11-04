@@ -611,7 +611,7 @@
       "C": "M2",
       "D": "M2"
     },
-    "targetMistake": "M2"
+    "targetMistake": "M3"
   },
   {
     "id": "T3",
@@ -820,5 +820,222 @@
       "D": "M5"
     },
     "targetMistake": "M5"
+  
+},
+  {
+    "id": "T7",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M1",
+    "text": {
+      "en": "What is 3/8 + 2/8?",
+      "te": "3/8 + 2/8 ఎంత?",
+      "hi": "3/8 + 2/8 कितना है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "5/16", "te": "5/16", "hi": "5/16"}},
+      {"id": "B", "text": {"en": "5/8", "te": "5/8", "hi": "5/8"}},
+      {"id": "C", "text": {"en": "3/8", "te": "3/8", "hi": "3/8"}},
+      {"id": "D", "text": {"en": "2/8", "te": "2/8", "hi": "2/8"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M1", "C": "M2", "D": "M2"}
+  },
+  {
+    "id": "T8",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M2",
+    "text": {
+      "en": "What is 2/9 + 5/9?",
+      "te": "2/9 + 5/9 ఎంత?",
+      "hi": "2/9 + 5/9 कितना है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "3/9", "te": "3/9", "hi": "3/9"}},
+      {"id": "B", "text": {"en": "7/9", "te": "7/9", "hi": "7/9"}},
+      {"id": "C", "text": {"en": "2/9", "te": "2/9", "hi": "2/9"}},
+      {"id": "D", "text": {"en": "5/9", "te": "5/9", "hi": "5/9"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M2", "C": "M2", "D": "M2"}
+  },
+  {
+    "id": "T9",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M2",
+    "text": {
+      "en": "What is 4/11 + 3/11?",
+      "te": "4/11 + 3/11 ఎంత?",
+      "hi": "4/11 + 3/11 कितना है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "1/11", "te": "1/11", "hi": "1/11"}},
+      {"id": "B", "text": {"en": "7/11", "te": "7/11", "hi": "7/11"}},
+      {"id": "C", "text": {"en": "4/11", "te": "4/11", "hi": "4/11"}},
+      {"id": "D", "text": {"en": "3/11", "te": "3/11", "hi": "3/11"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M2", "C": "M2", "D": "M2"}
+  },
+  {
+    "id": "T10",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M2",
+    "text": {
+      "en": "What is 2/7 + 4/7?",
+      "te": "2/7 + 4/7 ఎంత?",
+      "hi": "2/7 + 4/7 कितना है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "8/14", "te": "8/14", "hi": "8/14"}},
+      {"id": "B", "text": {"en": "6/7", "te": "6/7", "hi": "6/7"}},
+      {"id": "C", "text": {"en": "2/7", "te": "2/7", "hi": "2/7"}},
+      {"id": "D", "text": {"en": "4/7", "te": "4/7", "hi": "4/7"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M1", "C": "M2", "D": "M2"}
+  },
+  {
+    "id": "T11",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M3",
+    "text": {
+      "en": "Which fraction is greater: 1/6 or 1/4?",
+      "te": "1/6, 1/4 వీటిలో ఏ భిన్నం పెద్దది?",
+      "hi": "1/6 और 1/4 में कौन-सा भिन्न बड़ा है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "1/6", "te": "1/6", "hi": "1/6"}},
+      {"id": "B", "text": {"en": "1/4", "te": "1/4", "hi": "1/4"}},
+      {"id": "C", "text": {"en": "Both are equal", "te": "రెండూ సమానం", "hi": "दोनों बराबर हैं"}},
+      {"id": "D", "text": {"en": "Cannot say", "te": "చెప్పలేము", "hi": "नहीं बता सकते"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M3", "C": "M3", "D": "M3"}
+  },
+  {
+    "id": "T12",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M4",
+    "text": {
+      "en": "What is the simplest form of 9/12?",
+      "te": "9/12 యొక్క సరళ రూపం ఏమిటి?",
+      "hi": "9/12 का सरलतम रूप क्या है?"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "3/12", "te": "3/12", "hi": "3/12"}},
+      {"id": "B", "text": {"en": "3/4", "te": "3/4", "hi": "3/4"}},
+      {"id": "C", "text": {"en": "9/4", "te": "9/4", "hi": "9/4"}},
+      {"id": "D", "text": {"en": "6/9", "te": "6/9", "hi": "6/9"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M4", "C": "M4", "D": "M4"}
+  },
+  {
+    "id": "T13",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M4",
+    "text": {
+      "en": "Simplify 15/20.",
+      "te": "15/20 ను సరళీకరించండి.",
+      "hi": "15/20 को सरल करें।"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "5/20", "te": "5/20", "hi": "5/20"}},
+      {"id": "B", "text": {"en": "3/4", "te": "3/4", "hi": "3/4"}},
+      {"id": "C", "text": {"en": "15/4", "te": "15/4", "hi": "15/4"}},
+      {"id": "D", "text": {"en": "3/5", "te": "3/5", "hi": "3/5"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M4", "C": "M4", "D": "M4"}
+  },
+  {
+    "id": "T14",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M5",
+    "text": {
+      "en": "Convert 3 2/5 into an improper fraction.",
+      "te": "3 2/5 ను అపక్రమ భిన్నంగా మార్చండి.",
+      "hi": "3 2/5 को विषम भिन्न में बदलें।"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "5/5", "te": "5/5", "hi": "5/5"}},
+      {"id": "B", "text": {"en": "17/5", "te": "17/5", "hi": "17/5"}},
+      {"id": "C", "text": {"en": "15/5", "te": "15/5", "hi": "15/5"}},
+      {"id": "D", "text": {"en": "17/1", "te": "17/1", "hi": "17/1"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M5", "C": "M5", "D": "M5"}
+  },
+  {
+    "id": "T15",
+    "classId": "class6a",
+    "topicId": "fractions",
+    "set": "test",
+    "targetMistake": "M5",
+    "text": {
+      "en": "Convert 1 3/4 into an improper fraction.",
+      "te": "1 3/4 ను అపక్రమ భిన్నంగా మార్చండి.",
+      "hi": "1 3/4 को विषम भिन्न में बदलें।"
+    },
+    "options": [
+      {"id": "A", "text": {"en": "4/4", "te": "4/4", "hi": "4/4"}},
+      {"id": "B", "text": {"en": "7/4", "te": "7/4", "hi": "7/4"}},
+      {"id": "C", "text": {"en": "5/4", "te": "5/4", "hi": "5/4"}},
+      {"id": "D", "text": {"en": "7/1", "te": "7/1", "hi": "7/1"}}
+    ],
+    "correctOptionId": "B",
+    "mistakeByOption": {"A": "M5", "C": "M5", "D": "M5"}
+  },
+  {
+  "id": "T16",
+  "classId": "class6a",
+  "topicId": "fractions",
+  "set": "test",
+  "targetMistake": "M3",
+  "text": {
+    "en": "Which fraction is greater: 2/3 or 3/5?",
+    "te": "2/3, 3/5 వీటిలో ఏ భిన్నం పెద్దది?",
+    "hi": "2/3 और 3/5 में कौन-सा भिन्न बड़ा है?"
+  },
+  "options": [
+    {
+      "id": "A",
+      "text": {"en": "3/5", "te": "3/5", "hi": "3/5"}
+    },
+    {
+      "id": "B",
+      "text": {"en": "2/3", "te": "2/3", "hi": "2/3"}
+    },
+    {
+      "id": "C",
+      "text": {"en": "Both are equal", "te": "రెండూ సమానం", "hi": "दोनों बराबर हैं"}
+    },
+    {
+      "id": "D",
+      "text": {"en": "Cannot be compared", "te": "పోల్చలేము", "hi": "तुलना नहीं कर सकते"}
+    }
+  ],
+  "correctOptionId": "B",
+  "mistakeByOption": {
+    "A": "M3",
+    "C": "M3",
+    "D": "M3"
   }
+}
 ]

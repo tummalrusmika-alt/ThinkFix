@@ -4,7 +4,7 @@ import {
   getQuestions,
   saveAttempt,
   getStudentSession,
-  getResolvedFocusMistake
+  getResolvedFocusMistake,
 } from '../lib/data'
 import { pick } from '../lib/i18n'
 
@@ -36,9 +36,7 @@ export default function Test() {
       const session = getStudentSession()
 
       if (!session?.classId || !(session.studentUid || session.id)) {
-        setError(
-          'Please join your class and complete the diagnostic first.'
-        )
+        setError('Please join your class and complete the diagnostic first.')
         return
       }
 
@@ -51,28 +49,56 @@ export default function Test() {
         return
       }
 
-      const pool = getQuestions(session.classId, null, 'test')
+      const focusId = String(focus.id).toUpperCase()
 
-      const focusQuestions = pool.filter(question =>
-        String(question.targetMistake || '').toUpperCase() ===
-        String(focus.id).toUpperCase()
+      // All test questions tagged for this student's focus mistake.
+      const allFocusQuestions = getQuestions(
+        session.classId,
+        null,
+        'test',
+        { excludeSeen: false }
+      ).filter(
+        (question) =>
+          String(question.targetMistake || '').toUpperCase() === focusId
       )
 
-      if (focusQuestions.length < 3) {
+      // Prefer questions for this mistake that the student has not seen.
+      const freshFocusQuestions = getQuestions(
+        session.classId,
+        null,
+        'test'
+      ).filter(
+        (question) =>
+          String(question.targetMistake || '').toUpperCase() === focusId
+      )
+
+      if (allFocusQuestions.length < 3) {
         setError(
-          `There are only ${focusQuestions.length} fresh questions for ${focus.id}. Please ask your teacher to add more.`
+          `There are only ${allFocusQuestions.length} test questions for ${focusId}. Please ask your teacher to add more questions for this mistake.`
         )
         return
       }
 
-      const shuffled = [...focusQuestions].sort(
+      const freshShuffled = [...freshFocusQuestions].sort(
         () => Math.random() - 0.5
       )
+      const chosen = freshShuffled.slice(0, 3)
+      const chosenIds = new Set(chosen.map((question) => question.id))
+
+      // If fewer than three are fresh, reuse questions with the same
+      // target mistake so the test remains focused.
+      if (chosen.length < 3) {
+        const remaining = allFocusQuestions
+          .filter((question) => !chosenIds.has(question.id))
+          .sort(() => Math.random() - 0.5)
+
+        chosen.push(...remaining.slice(0, 3 - chosen.length))
+      }
 
       setQuestions(
-        shuffled.slice(0, 3).map(question => ({
+        chosen.map((question) => ({
           ...question,
-          options: shuffleOptions(question.options || [])
+          options: shuffleOptions(question.options || []),
         }))
       )
     } catch (err) {
@@ -103,7 +129,7 @@ export default function Test() {
         correct: isCorrect,
         targetMistake: question.targetMistake,
         mistakeId: null,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       })
     } catch (err) {
       console.error('Could not save test answer:', err)
@@ -112,41 +138,35 @@ export default function Test() {
     }
 
     if (isCorrect) {
-      setScore(value => value + 1)
+      setScore((value) => value + 1)
     }
 
     setSelected('')
 
     if (current + 1 < questions.length) {
-      setCurrent(value => value + 1)
+      setCurrent((value) => value + 1)
     } else {
       setFinished(true)
     }
   }
 
   if (loading) {
-    return (
-      <div className="p-6 text-center">
-        Loading your test...
-      </div>
-    )
+    return <div className="p-6 text-center">Loading your test...</div>
   }
 
   if (error) {
     return (
-      <div className="max-w-xl mx-auto p-6 text-center">
-        <h2 className="text-2xl font-bold text-red-600 mb-3">
+      <div className="mx-auto max-w-xl p-6 text-center">
+        <h2 className="mb-3 text-2xl font-bold text-red-600">
           Test unavailable
         </h2>
 
-        <p className="text-gray-600 mb-5">
-          {error}
-        </p>
+        <p className="mb-5 text-gray-600">{error}</p>
 
         <button
           type="button"
           onClick={() => navigate('/student/dashboard')}
-          className="px-5 py-3 rounded-lg bg-blue-600 text-white"
+          className="rounded-lg bg-blue-600 px-5 py-3 text-white"
         >
           Back to Dashboard
         </button>
@@ -155,39 +175,29 @@ export default function Test() {
   }
 
   if (finished) {
-    const percent = Math.round(
-      (score / questions.length) * 100
-    )
+    const percent = Math.round((score / questions.length) * 100)
 
     const nextStep =
-      percent <= 39
-        ? 'Re-learn'
-        : percent <= 75
-          ? 'Practise'
-          : 'Challenge'
+      percent <= 39 ? 'Re-learn' : percent <= 75 ? 'Practise' : 'Challenge'
 
     return (
-      <div className="max-w-xl mx-auto p-6 text-center">
-        <h2 className="text-3xl font-bold mb-4">
-          Test Completed!
-        </h2>
+      <div className="mx-auto max-w-xl p-6 text-center">
+        <h2 className="mb-4 text-3xl font-bold">Test Completed!</h2>
 
-        <p className="text-xl mb-2">
+        <p className="mb-2 text-xl">
           Your score: {score}/{questions.length}
         </p>
 
-        <p className="text-lg font-semibold mb-2">
-          {percent}%
-        </p>
+        <p className="mb-2 text-lg font-semibold">{percent}%</p>
 
-        <p className="text-gray-700 mb-5">
+        <p className="mb-5 text-gray-700">
           Recommended next step: {nextStep}
         </p>
 
         <button
           type="button"
           onClick={() => navigate('/student/dashboard')}
-          className="px-5 py-3 rounded-lg bg-blue-600 text-white"
+          className="rounded-lg bg-blue-600 px-5 py-3 text-white"
         >
           Back to Dashboard
         </button>
@@ -200,40 +210,34 @@ export default function Test() {
   if (!question) return null
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-
-      <div className="flex justify-between items-center mb-6 gap-3">
-        <h2 className="text-2xl font-bold">
-          Focus Test
-        </h2>
+    <div className="mx-auto max-w-2xl p-6">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold">Focus Test</h2>
 
         <span className="text-sm font-semibold text-blue-600">
           Question {current + 1} of {questions.length}
         </span>
       </div>
 
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+      <div className="mb-6 h-2 w-full rounded-full bg-gray-200">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all"
+          className="h-2 rounded-full bg-blue-600 transition-all"
           style={{
-            width: `${((current + 1) / questions.length) * 100}%`
+            width: `${((current + 1) / questions.length) * 100}%`,
           }}
         />
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6">
-
-        <h3 className="text-lg font-semibold mb-6">
-          {pick(question.text)}
-        </h3>
+      <div className="rounded-xl bg-white p-6 shadow-md">
+        <h3 className="mb-6 text-lg font-semibold">{pick(question.text)}</h3>
 
         <div className="space-y-3">
-          {question.options?.map(option => (
+          {question.options?.map((option) => (
             <button
               key={option.id}
               type="button"
               onClick={() => setSelected(option.id)}
-              className={`w-full text-left p-4 border rounded-lg transition ${
+              className={`w-full rounded-lg border p-4 text-left transition ${
                 selected === option.id
                   ? 'border-blue-600 bg-blue-50 text-blue-700'
                   : 'border-gray-200 hover:bg-gray-50'
@@ -248,13 +252,10 @@ export default function Test() {
           type="button"
           onClick={handleAnswer}
           disabled={!selected}
-          className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+          className="mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white disabled:opacity-50"
         >
-          {current === questions.length - 1
-            ? 'Finish Test'
-            : 'Next Question'}
+          {current === questions.length - 1 ? 'Finish Test' : 'Next Question'}
         </button>
-
       </div>
     </div>
   )

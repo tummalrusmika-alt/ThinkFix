@@ -9,7 +9,6 @@ import {
 } from './lib/teacherData'
 
 import { getFingerprint } from './lib/fingerprint'
-
 import questions from './questions.json'
 
 const MISTAKE_IDS = ['M1', 'M2', 'M3', 'M4', 'M5']
@@ -22,8 +21,6 @@ const STATUS_STYLES = {
   none: 'bg-slate-100 text-slate-500',
 }
 
-// Soft, friendly heatmap colours. The symbol inside each tile keeps it
-// readable for colour-blind viewers.
 const TILE_STYLES = {
   active: 'bg-[#E8735F] text-white shadow-sm shadow-[#E8735F]/30',
   improving: 'bg-[#F6C453] text-[#6B4A00] shadow-sm shadow-[#F6C453]/40',
@@ -94,16 +91,11 @@ function getLocalizedText(value, language = 'en') {
   }
 
   if (Array.isArray(value)) {
-    return value
-      .map((item) => getLocalizedText(item, language))
-      .join(', ')
+    return value.map((item) => getLocalizedText(item, language)).join(', ')
   }
 
   if (value && typeof value === 'object') {
-    return getLocalizedText(
-      value[language] ?? value.en ?? '',
-      language
-    )
+    return getLocalizedText(value[language] ?? value.en ?? '', language)
   }
 
   return ''
@@ -141,7 +133,6 @@ const LABELS = {
     attemptedCount: 'students have recorded attempts.',
     totalAttempts: 'Recorded attempts',
   },
-
   te: {
     teacher: 'ఉపాధ్యాయులు',
     class: '6A తరగతి · భిన్నాలు',
@@ -173,7 +164,6 @@ const LABELS = {
     attemptedCount: 'మంది విద్యార్థులు ప్రయత్నాలు నమోదు చేశారు.',
     totalAttempts: 'నమోదైన ప్రయత్నాలు',
   },
-
   hi: {
     teacher: 'शिक्षक',
     class: 'कक्षा 6A · भिन्न',
@@ -197,7 +187,7 @@ const LABELS = {
     noPlan: 'अभी कोई गतिविधि सुझाव उपलब्ध नहीं है।',
     noStudents: 'अभी तक कोई विद्यार्थी नहीं जुड़ा है।',
     loadError: 'डैशबोर्ड लोड नहीं हो सका। कृपया फिर कोशिश करें।',
-    noClass: 'इस शिक्षक से कोई कक्षा जुड़ी नहीं है।',
+    noClass: 'इस शिक्षक से कोई कक्षा नहीं जुड़ी है।',
     loading: 'डैशबोर्ड लोड हो रहा है...',
     language: 'भाषा',
     sample: 'लाइव डेटा',
@@ -231,7 +221,6 @@ export default function TeacherDashboard() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   const hasLoadedOnce = useRef(false)
-
   const labels = LABELS[language] || LABELS.en
 
   function t(key) {
@@ -243,7 +232,6 @@ export default function TeacherDashboard() {
     }
 
     const labelKey = keyMap[key]
-
     return (labelKey && labels[labelKey]) || key
   }
 
@@ -251,7 +239,6 @@ export default function TeacherDashboard() {
     return labels[STATUS_KEYS[status] || 'none']
   }
 
-  // Auto-refresh every 15 seconds so new student answers appear.
   useEffect(() => {
     const timer = setInterval(() => {
       setRefreshKey((value) => value + 1)
@@ -283,21 +270,17 @@ export default function TeacherDashboard() {
           return
         }
 
-        const [
-          classStudents,
-          classAttempts,
-          classMistakes,
-        ] = await Promise.all([
-          getStudents(currentClass.id),
-          getClassAttempts(currentClass.id),
-          getMistakes(currentClass.id),
-        ])
+        const [classStudents, classAttempts, classMistakes] =
+          await Promise.all([
+            getStudents(currentClass.id),
+            getClassAttempts(currentClass.id),
+            getMistakes(currentClass.id),
+          ])
 
         const nextFingerprints = {}
 
         for (const student of classStudents) {
           const studentUid = student.authUid || student.id
-
           const studentAttempts = classAttempts.filter(
             (attempt) => attempt.studentUid === studentUid
           )
@@ -396,6 +379,24 @@ export default function TeacherDashboard() {
     )
   ).length
 
+  const confidenceAttempts = attempts.filter(
+    (attempt) =>
+      ['guess', 'somewhat', 'sure'].includes(attempt.confidence) &&
+      typeof attempt.isCorrect === 'boolean'
+  )
+
+  const confidenceCounts = {
+    guessedCorrect: confidenceAttempts.filter(
+      (attempt) => attempt.confidence === 'guess' && attempt.isCorrect
+    ).length,
+    somewhatCorrect: confidenceAttempts.filter(
+      (attempt) => attempt.confidence === 'somewhat' && attempt.isCorrect
+    ).length,
+    sureIncorrect: confidenceAttempts.filter(
+      (attempt) => attempt.confidence === 'sure' && !attempt.isCorrect
+    ).length,
+  }
+
   const activeCounts = Object.fromEntries(
     MISTAKE_IDS.map((mistakeId) => [
       mistakeId,
@@ -439,7 +440,6 @@ export default function TeacherDashboard() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#FFFCF5] p-4 sm:p-8">
-      {/* Soft background decoration */}
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#DDEFEF] opacity-60 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#FFF0BD] opacity-60 blur-3xl" />
 
@@ -461,7 +461,10 @@ export default function TeacherDashboard() {
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <p className="text-[#718582]">
-                  {getLocalizedText(classInfo?.className || labels.class, language)}
+                  {getLocalizedText(
+                    classInfo?.className || labels.class,
+                    language
+                  )}
                 </p>
 
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E4EDC9] px-3 py-1 text-xs font-bold text-[#526B38]">
@@ -526,6 +529,57 @@ export default function TeacherDashboard() {
           ))}
         </section>
 
+        <section className="mb-8 rounded-[2rem] border border-[#DCE7E2] bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E8E2FA] text-xl">
+              🧠
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-[#254C49]">
+                Class Confidence Insights
+              </h2>
+              <p className="mt-1 text-sm text-[#718582]">
+                Counts are answers with a confidence rating, not unique students.
+              </p>
+            </div>
+          </div>
+
+          {confidenceAttempts.length === 0 ? (
+            <p className="mt-5 rounded-2xl bg-[#F4F9F7] p-4 text-[#718582]">
+              No confidence-rated answers have been recorded yet.
+            </p>
+          ) : (
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              <article className="rounded-2xl bg-[#DDEFEF] p-5">
+                <p className="text-sm font-semibold text-[#397F78]">
+                  🎲 Guessed but correct
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#254C49]">
+                  {confidenceCounts.guessedCorrect}
+                </p>
+              </article>
+
+              <article className="rounded-2xl bg-[#FFF0BD] p-5">
+                <p className="text-sm font-semibold text-[#8A6A24]">
+                  🤔 Somewhat sure and correct
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#254C49]">
+                  {confidenceCounts.somewhatCorrect}
+                </p>
+              </article>
+
+              <article className="rounded-2xl bg-[#FCE5E0] p-5">
+                <p className="text-sm font-semibold text-[#C0432E]">
+                  💪 Very sure but incorrect
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#254C49]">
+                  {confidenceCounts.sureIncorrect}
+                </p>
+              </article>
+            </div>
+          )}
+        </section>
+
         <section className="mb-8 overflow-hidden rounded-[2rem] border border-[#DCE7E2] bg-white shadow-sm">
           <div className="relative overflow-hidden bg-gradient-to-br from-[#254C49] via-[#2F6A64] to-[#397F78] px-5 py-7 text-white sm:px-8">
             <div
@@ -542,7 +596,9 @@ export default function TeacherDashboard() {
                 <h2 className="text-2xl font-black tracking-tight">
                   {getLocalizedText(t('teacher.heatmap.title'), language)}
                 </h2>
-                <p className="mt-1 text-sm text-[#CDE6E1]">{labels.heatmapHelp}</p>
+                <p className="mt-1 text-sm text-[#CDE6E1]">
+                  {labels.heatmapHelp}
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -589,7 +645,10 @@ export default function TeacherDashboard() {
                         )
                         const isLit = hoverColumn === mistakeId
                         const share = students.length
-                          ? Math.min(100, (activeCounts[mistakeId] / students.length) * 100)
+                          ? Math.min(
+                              100,
+                              (activeCounts[mistakeId] / students.length) * 100
+                            )
                           : 0
 
                         return (
@@ -606,7 +665,9 @@ export default function TeacherDashboard() {
                                   : 'bg-[#F4F9F7] text-[#254C49] ring-1 ring-[#DCE7E2]'
                               }`}
                             >
-                              <span className="block text-sm font-black">{mistakeId}</span>
+                              <span className="block text-sm font-black">
+                                {mistakeId}
+                              </span>
 
                               {mistakeName && (
                                 <span
@@ -659,7 +720,8 @@ export default function TeacherDashboard() {
                         language
                       )
                       const statuses = MISTAKE_IDS.map(
-                        (mistakeId) => fingerprints[student.id]?.[mistakeId] || 'none'
+                        (mistakeId) =>
+                          fingerprints[student.id]?.[mistakeId] || 'none'
                       )
                       const needsHelp = statuses.filter((status) =>
                         ['active', 'reopened'].includes(status)
@@ -670,7 +732,8 @@ export default function TeacherDashboard() {
                       const improvingCount = statuses.filter(
                         (status) => status === 'improving'
                       ).length
-                      const fixedArc = (fixedCount / MISTAKE_IDS.length) * AVATAR_RING
+                      const fixedArc =
+                        (fixedCount / MISTAKE_IDS.length) * AVATAR_RING
                       const improvingArc =
                         (improvingCount / MISTAKE_IDS.length) * AVATAR_RING
 
@@ -679,8 +742,10 @@ export default function TeacherDashboard() {
                           <td className="sticky left-0 z-10 bg-white pr-3">
                             <button
                               type="button"
-                              onClick={() => navigate(`/teacher/student/${student.id}`)}
-                              className="flex w-full items-center gap-3 rounded-2xl bg-[#F4F9F7] px-3 py-2 text-left font-bold text-[#254C49] ring-1 ring-[#DCE7E2] transition group-hover:bg-[#DDEFEF] group-hover:text-[#254C49] group-hover:ring-[#397F78]"
+                              onClick={() =>
+                                navigate(`/teacher/student/${student.id}`)
+                              }
+                              className="flex w-full items-center gap-3 rounded-2xl bg-[#F4F9F7] px-3 py-2 text-left font-bold text-[#254C49] ring-1 ring-[#DCE7E2] transition group-hover:bg-[#DDEFEF] group-hover:ring-[#397F78]"
                             >
                               <span
                                 title={`${statusLabel('provisionally_fixed')} ${fixedCount}/${MISTAKE_IDS.length} · ${statusLabel('improving')} ${improvingCount}/${MISTAKE_IDS.length}`}
@@ -722,6 +787,7 @@ export default function TeacherDashboard() {
                                     />
                                   )}
                                 </svg>
+
                                 <span
                                   aria-hidden="true"
                                   className="flex h-7 w-7 items-center justify-center rounded-full bg-[#254C49] text-xs font-bold text-white"
@@ -729,6 +795,7 @@ export default function TeacherDashboard() {
                                   {Array.from(nickname)[0] || ''}
                                 </span>
                               </span>
+
                               <span className="truncate">{nickname}</span>
                             </button>
                           </td>
@@ -756,8 +823,13 @@ export default function TeacherDashboard() {
                                     TILE_STYLES[status] || TILE_STYLES.none
                                   }`}
                                 >
-                                  <StatusGlyph status={status} className="h-6 w-6" />
-                                  <span className="sr-only">{statusLabel(status)}. Open mistake history.</span>
+                                  <StatusGlyph
+                                    status={status}
+                                    className="h-6 w-6"
+                                  />
+                                  <span className="sr-only">
+                                    {statusLabel(status)}. Open mistake history.
+                                  </span>
 
                                   <span
                                     aria-hidden="true"
@@ -826,11 +898,15 @@ export default function TeacherDashboard() {
 
         <section className="rounded-[2rem] border border-[#DCE7E2] bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-black text-[#254C49]">{labels.progress}</h2>
+            <h2 className="text-xl font-black text-[#254C49]">
+              {labels.progress}
+            </h2>
 
             <p className="text-2xl font-black text-[#397F78]">
               {students.length
-                ? `${Math.round((studentsWithAttempts / students.length) * 100)}%`
+                ? `${Math.round(
+                    (studentsWithAttempts / students.length) * 100
+                  )}%`
                 : '0%'}
             </p>
           </div>
