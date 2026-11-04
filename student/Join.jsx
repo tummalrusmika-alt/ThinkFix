@@ -8,7 +8,7 @@ import { studentLogin, joinClass } from '../api.js'
 import { t } from '../lib/i18n'
 import LanguageToggle from '../components/LanguageToggle'
 
-// Demo class code: this class must already exist in your Firebase classes
+// Demo class code shown on the page: this class must exist in your Firebase classes
 const DEMO_CLASS_CODE = 'FIX123'
 
 function createId() {
@@ -26,11 +26,6 @@ export default function Join() {
   const [nickname, setNickname] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-
-  function fillDemo() {
-    setClassCode(DEMO_CLASS_CODE)
-    setMessage('')
-  }
 
   async function handleJoin(event) {
     event.preventDefault()
@@ -329,14 +324,6 @@ export default function Join() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={fillDemo}
-                disabled={loading}
-                className="mt-4 rounded-lg border border-[#397F78] bg-white px-4 py-2 text-sm font-bold text-[#397F78] transition hover:bg-[#397F78] hover:text-white disabled:opacity-60"
-              >
-                Use demo class code
-              </button>
             </div>
 
             {/* Bottom note */}
